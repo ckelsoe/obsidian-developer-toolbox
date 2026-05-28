@@ -1,0 +1,10 @@
+{
+	"id": "developer-toolbox",
+	"name": "Developer Toolbox",
+	"version": "0.1.0",
+	"minAppVersion": "1.5.0",
+	"description": "Capture annotated screenshots and structured issue context for AI-assisted plugin development.",
+	"author": "Charles Kelsoe",
+	"authorUrl": "https://github.com/ckelsoe",
+	"isDesktopOnly": true
+}
