@@ -1,6 +1,7 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
 import type DeveloperToolboxPlugin from "./main";
 import type { ToolHandle } from "./tools/types";
+import { readPluginVersionFromDisk } from "./lib/manifest-version";
 
 export interface ToolStoredSettings {
 	enabled: boolean;
@@ -43,6 +44,25 @@ export class ToolboxSettingTab extends PluginSettingTab {
 		for (const tool of this.plugin.tools) {
 			this.renderToolSection(containerEl, tool);
 		}
+
+		this.renderFooter(containerEl);
+	}
+
+	private renderFooter(parent: HTMLElement): void {
+		const footer = parent.createDiv({ cls: "toolbox-version-footer" });
+		const versionEl = footer.createSpan({
+			text: `Developer Toolbox v${this.plugin.manifest.version}`,
+		});
+		footer.createEl("a", {
+			text: "View on GitHub",
+			href: "https://github.com/ckelsoe/obsidian-developer-toolbox",
+			cls: "toolbox-version-link",
+		});
+		// The in-memory manifest can be stale after a live reload; show the
+		// on-disk version so the footer matches what was actually built.
+		void readPluginVersionFromDisk(this.app, this.plugin.manifest.id).then((v) => {
+			if (v) versionEl.setText(`Developer Toolbox v${v}`);
+		});
 	}
 
 	private renderToolSection(parent: HTMLElement, tool: ToolHandle): void {

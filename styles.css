@@ -248,3 +248,47 @@
 	z-index: 5;
 }
 
+
+.toolbox-reloader-empty {
+	color: var(--text-muted);
+	margin: 0.5em 0;
+}
+
+.toolbox-version-footer {
+	display: flex;
+	gap: 0.6em;
+	align-items: center;
+	margin-top: 1.5em;
+	padding-top: 0.8em;
+	border-top: 1px solid var(--background-modifier-border);
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+}
+
+.toolbox-reloader-dirty,
+.toolbox-reloader-dirty svg {
+	color: var(--text-warning);
+}
+
+.toolbox-reloader-dirty {
+	animation: toolbox-reloader-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes toolbox-reloader-pulse {
+	0%,
+	100% {
+		opacity: 1;
+	}
+	50% {
+		opacity: 0.45;
+	}
+}
+
+.toolbox-reloader-done,
+.toolbox-reloader-done svg {
+	color: var(--text-success);
+}
+
+.toolbox-reloader-status {
+	cursor: pointer;
+}

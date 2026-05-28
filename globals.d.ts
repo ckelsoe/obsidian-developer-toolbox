@@ -6,6 +6,9 @@ declare module "obsidian" {
 		plugins: {
 			enabledPlugins: Set<string>;
 			plugins: Record<string, unknown>;
+			manifests: Record<string, PluginManifest>;
+			enablePlugin(id: string): Promise<void>;
+			disablePlugin(id: string): Promise<void>;
 		};
 	}
 

@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-05-28
+
+### Added
+- Plugin reloader tool. Reloads a plugin in place via Obsidian's internal `disablePlugin` + `enablePlugin` so a fresh build takes effect without restarting Obsidian.
+- Configurable dev plugins: pick plugins by name in the settings tab; the IDs are stored. The "Developer Toolbox: Reload plugin" command opens a fuzzy picker of installed plugins (listed by display name with the ID as subtext, never typed by hand). The "Developer Toolbox: Reload dev plugins" command reloads all configured dev plugins at once.
+- Status ribbon icon: doubles as a reload status light. Turns amber and pulses when a watched file changed and a reload is pending; flashes green right after a reload. Clicking it reloads the configured dev plugins and clears the pending state.
+- Status bar indicator: a persistent always-visible item showing the running toolbox version (read from disk) and the load time, for example `↻ v0.2.0 · 18:27:43`. The load time updates on every reload so a same-version reload still visibly confirms it took effect. Shows `↻ reload needed` when a change is pending and `↻ reloaded ✓` right after a reload. Clicking it reloads the configured dev plugins.
+- File watching: when dev plugins are configured, their folders are watched for changes to `main.js`, `manifest.json`, or `styles.css`. The directory is watched rather than the file so esbuild's atomic-rename writes do not deafen the watch after the first build. Events are debounced (default 250 ms, configurable) to coalesce a single build's burst of writes.
+- Auto-reload toggle (off by default): when on, a detected change reloads the plugin immediately; when off, the change only flags the ribbon icon so you reload manually.
+- Reloader diagnostics (on by default): a notice surfaces on watcher start, on a pending change, and on every reload, so a silent watcher failure becomes visible.
+- Reload notices report the reloaded plugin's version, read straight from `manifest.json` on disk so it reflects the freshly built file regardless of Obsidian's in-memory manifest cache.
+- Settings tab footer shows the toolbox version and a link to the GitHub repository.
+
 ## [0.1.0] - 2026-05-28
 
 ### Added

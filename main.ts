@@ -5,8 +5,9 @@ import type { ToolboxLib } from "./lib/types";
 import type { Disposable, ToolContext, ToolHandle } from "./tools/types";
 
 import issueCapture from "./tools/issue-capture";
+import reloader from "./tools/reloader";
 
-const TOOLS: ToolHandle[] = [issueCapture];
+const TOOLS: ToolHandle[] = [issueCapture, reloader];
 
 export default class DeveloperToolboxPlugin extends Plugin {
 	data!: ToolboxData;
