@@ -90,3 +90,86 @@
 	width: 100%;
 }
 
+.toolbox-annotation-toolbar {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	padding: 6px;
+	margin-bottom: 6px;
+	background: var(--background-secondary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 4px;
+	align-items: center;
+}
+
+.toolbox-annotation-tool,
+.toolbox-annotation-action {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 30px;
+	height: 30px;
+	padding: 0;
+	border: 1px solid transparent;
+	border-radius: 4px;
+	background: transparent;
+	cursor: pointer;
+	color: var(--text-normal);
+}
+
+.toolbox-annotation-tool:hover,
+.toolbox-annotation-action:hover {
+	background: var(--background-modifier-hover);
+}
+
+.toolbox-annotation-tool.is-active {
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+	border-color: var(--interactive-accent);
+}
+
+.toolbox-annotation-colors {
+	display: inline-flex;
+	gap: 4px;
+	margin-left: 6px;
+	padding-left: 6px;
+	border-left: 1px solid var(--background-modifier-border);
+}
+
+.toolbox-annotation-color {
+	width: 22px;
+	height: 22px;
+	padding: 0;
+	border: 2px solid transparent;
+	border-radius: 50%;
+	background: var(--swatch-color);
+	cursor: pointer;
+}
+
+.toolbox-annotation-color.is-active {
+	border-color: var(--text-normal);
+	transform: scale(1.1);
+}
+
+.toolbox-annotation-actions {
+	display: inline-flex;
+	gap: 4px;
+	margin-left: auto;
+	padding-left: 6px;
+	border-left: 1px solid var(--background-modifier-border);
+}
+
+.toolbox-annotation-stage {
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 4px;
+	overflow: hidden;
+	background: var(--background-secondary);
+	min-height: 200px;
+	max-height: 60vh;
+}
+
+.toolbox-annotation-stage canvas {
+	display: block;
+	max-width: 100%;
+}
+
