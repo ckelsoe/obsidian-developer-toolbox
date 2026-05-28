@@ -46,3 +46,47 @@
 .toolbox-stacked-row-content {
 	width: 100%;
 }
+
+.toolbox-issue-dialog {
+	min-width: min(800px, 90vw);
+}
+
+.toolbox-issue-screenshot {
+	max-width: 100%;
+	max-height: 360px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 4px;
+	display: block;
+	background: var(--background-secondary);
+}
+
+.toolbox-issue-description-textarea,
+.toolbox-issue-payload-textarea {
+	width: 100%;
+	min-height: 6em;
+	font-family: var(--font-monospace);
+	resize: vertical;
+}
+
+.toolbox-issue-payload-textarea {
+	min-height: 9em;
+	background: var(--background-secondary);
+}
+
+.toolbox-issue-context-list > div {
+	font-size: var(--font-ui-small);
+	color: var(--text-muted);
+	font-family: var(--font-monospace);
+}
+
+.toolbox-issue-buttons {
+	display: flex;
+	gap: 8px;
+	justify-content: flex-end;
+	margin-top: 16px;
+}
+
+.toolbox-issue-folder-input {
+	width: 100%;
+}
+

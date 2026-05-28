@@ -4,7 +4,9 @@ import { buildLib } from "./lib";
 import type { ToolboxLib } from "./lib/types";
 import type { Disposable, ToolContext, ToolHandle } from "./tools/types";
 
-const TOOLS: ToolHandle[] = [];
+import issueCapture from "./tools/issue-capture";
+
+const TOOLS: ToolHandle[] = [issueCapture];
 
 export default class DeveloperToolboxPlugin extends Plugin {
 	data!: ToolboxData;
@@ -48,8 +50,8 @@ export default class DeveloperToolboxPlugin extends Plugin {
 		this.active.delete(tool.id);
 	}
 
-	buildContext<T extends Record<string, unknown>>(tool: ToolHandle<T>): ToolContext<{ enabled: boolean } & T> {
-		const settings = this.data.tools[tool.id] as { enabled: boolean } & T;
+	buildContext<T extends { enabled: boolean }>(tool: ToolHandle<T>): ToolContext<T> {
+		const settings = this.data.tools[tool.id] as unknown as T;
 		return {
 			app: this.app,
 			plugin: this,

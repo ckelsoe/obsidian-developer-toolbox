@@ -14,10 +14,10 @@ export interface ToolContext<TSettings = unknown> {
 	saveSettings: () => Promise<void>;
 }
 
-export interface ToolHandle<TSettings extends Record<string, unknown> = Record<string, unknown>> {
+export interface ToolHandle<TSettings extends { enabled: boolean } = { enabled: boolean }> {
 	id: string;
 	displayName: string;
-	defaultSettings: { enabled: boolean } & TSettings;
-	register(ctx: ToolContext<{ enabled: boolean } & TSettings>): Disposable;
-	renderSettings?(container: HTMLElement, ctx: ToolContext<{ enabled: boolean } & TSettings>): void;
+	defaultSettings: TSettings;
+	register(ctx: ToolContext<TSettings>): Disposable;
+	renderSettings?(container: HTMLElement, ctx: ToolContext<TSettings>): void;
 }
