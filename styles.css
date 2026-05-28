@@ -1,1 +1,48 @@
 /* Developer Toolbox styles. Per-tool styles are appended in subsequent commits. */
+
+.toolbox-hidden {
+	display: none !important;
+}
+
+.toolbox-countdown-notice {
+	position: fixed;
+	right: 16px;
+	bottom: 16px;
+	z-index: var(--layer-popover, 1000);
+	background: var(--background-secondary);
+	color: var(--text-normal);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 6px;
+	padding: 8px 14px;
+	font: 13px/1.4 var(--font-interface);
+	box-shadow: var(--shadow-s);
+	display: flex;
+	gap: 6px;
+	align-items: baseline;
+}
+
+.toolbox-countdown-notice-counter {
+	font-weight: 600;
+	font-size: 16px;
+}
+
+.toolbox-stacked-row {
+	margin: 12px 0;
+}
+
+.toolbox-stacked-row-header {
+	margin-bottom: 6px;
+}
+
+.toolbox-stacked-row-name {
+	font-weight: 600;
+}
+
+.toolbox-stacked-row-desc {
+	color: var(--text-muted);
+	font-size: var(--font-ui-small);
+}
+
+.toolbox-stacked-row-content {
+	width: 100%;
+}
