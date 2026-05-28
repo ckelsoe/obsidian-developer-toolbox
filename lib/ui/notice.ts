@@ -1,3 +1,4 @@
+import { Notice } from "obsidian";
 import type { CountdownNoticeHandle } from "../types";
 
 const NOTICE_CLASS = "toolbox-countdown-notice";
@@ -6,15 +7,13 @@ export function countdownNotice(
 	seconds: number,
 	onTick?: (remaining: number) => void,
 ): CountdownNoticeHandle {
-	const doc = activeDocument;
-	const el = doc.body.createDiv({ cls: NOTICE_CLASS });
-	el.createSpan({ cls: "toolbox-countdown-notice-label", text: "Capturing in" });
-	const counter = el.createSpan({ cls: "toolbox-countdown-notice-counter", text: String(seconds) });
+	const initial = Math.max(1, Math.round(seconds));
+	const notice = new Notice(buildMessage(initial), (initial + 1) * 1000);
 
-	let remaining = seconds;
+	let remaining = initial;
 	let cancelled = false;
-	let resolveOuter: () => void;
-	let rejectOuter: (reason: unknown) => void;
+	let resolveOuter: () => void = () => undefined;
+	let rejectOuter: (reason: unknown) => void = () => undefined;
 	const promise = new Promise<void>((resolve, reject) => {
 		resolveOuter = resolve;
 		rejectOuter = reject;
@@ -23,13 +22,14 @@ export function countdownNotice(
 	const interval = window.setInterval(() => {
 		if (cancelled) return;
 		remaining -= 1;
-		counter.setText(String(remaining));
 		onTick?.(remaining);
 		if (remaining <= 0) {
 			window.clearInterval(interval);
-			el.detach();
+			notice.hide();
 			resolveOuter();
+			return;
 		}
+		notice.setMessage(buildMessage(remaining));
 	}, 1000);
 
 	return {
@@ -38,10 +38,14 @@ export function countdownNotice(
 			if (cancelled) return;
 			cancelled = true;
 			window.clearInterval(interval);
-			el.detach();
+			notice.hide();
 			rejectOuter(new Error("countdown cancelled"));
 		},
 	};
+}
+
+function buildMessage(remaining: number): string {
+	return `Capturing in ${remaining}…`;
 }
 
 export { NOTICE_CLASS as COUNTDOWN_NOTICE_CLASS };

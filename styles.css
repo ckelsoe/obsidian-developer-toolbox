@@ -137,17 +137,30 @@
 }
 
 .toolbox-annotation-color {
-	width: 22px;
-	height: 22px;
+	width: 24px;
+	height: 24px;
 	padding: 0;
-	border: 2px solid transparent;
+	border: 2px solid var(--background-modifier-border);
 	border-radius: 50%;
-	background: var(--swatch-color);
 	cursor: pointer;
+	background: var(--background-primary);
 }
 
+.toolbox-annotation-color[data-color="#ef4444"] { background: #ef4444; }
+.toolbox-annotation-color[data-color="#f97316"] { background: #f97316; }
+.toolbox-annotation-color[data-color="#eab308"] { background: #eab308; }
+.toolbox-annotation-color[data-color="#22c55e"] { background: #22c55e; }
+.toolbox-annotation-color[data-color="#3b82f6"] { background: #3b82f6; }
+.toolbox-annotation-color[data-color="#a855f7"] { background: #a855f7; }
+.toolbox-annotation-color[data-color="#ffffff"] { background: #ffffff; }
+.toolbox-annotation-color[data-color="#000000"] { background: #000000; }
+
 .toolbox-annotation-color.is-active {
-	border-color: var(--text-normal);
+	border-color: var(--text-accent);
+	box-shadow: 0 0 0 2px var(--text-accent);
+}
+
+.toolbox-annotation-color:hover {
 	transform: scale(1.1);
 }
 
@@ -159,7 +172,54 @@
 	border-left: 1px solid var(--background-modifier-border);
 }
 
+.toolbox-annotation-widths {
+	display: inline-flex;
+	gap: 4px;
+	margin-left: 6px;
+	padding-left: 6px;
+	border-left: 1px solid var(--background-modifier-border);
+	align-items: center;
+}
+
+.toolbox-annotation-width {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 30px;
+	height: 30px;
+	padding: 0;
+	border: 1px solid transparent;
+	border-radius: 4px;
+	background: transparent;
+	cursor: pointer;
+}
+
+.toolbox-annotation-width:hover {
+	background: var(--background-modifier-hover);
+}
+
+.toolbox-annotation-width.is-active {
+	background: var(--interactive-accent);
+	border-color: var(--interactive-accent);
+}
+
+.toolbox-annotation-width.is-active .toolbox-annotation-width-bar {
+	background: var(--text-on-accent);
+}
+
+.toolbox-annotation-width-bar {
+	display: block;
+	width: 18px;
+	background: var(--text-normal);
+	border-radius: 999px;
+}
+
+.toolbox-annotation-width-bar-thin { height: 2px; }
+.toolbox-annotation-width-bar-medium { height: 4px; }
+.toolbox-annotation-width-bar-thick { height: 7px; }
+
 .toolbox-annotation-stage {
+	position: relative;
 	border: 1px solid var(--background-modifier-border);
 	border-radius: 4px;
 	overflow: hidden;
@@ -171,5 +231,20 @@
 .toolbox-annotation-stage canvas {
 	display: block;
 	max-width: 100%;
+}
+
+.toolbox-annotation-text-editor {
+	position: absolute;
+	min-width: 120px;
+	min-height: 1.4em;
+	padding: 2px 4px;
+	background: rgba(255, 255, 255, 0.85);
+	border: 2px dashed var(--text-accent);
+	font-family: sans-serif;
+	font-weight: 700;
+	line-height: 1.2;
+	resize: both;
+	overflow: auto;
+	z-index: 5;
 }
 

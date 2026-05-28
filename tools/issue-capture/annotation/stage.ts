@@ -1,6 +1,6 @@
 import Konva from "konva";
 import type { Annotation, AnnotationKind, BasePalette } from "./types";
-import { DEFAULT_PALETTE } from "./types";
+import { DEFAULT_PALETTE, DEFAULT_TEXT_FONT_SIZE } from "./types";
 
 function dataUrlToBlob(dataUrl: string): Blob {
 	const commaIdx = dataUrl.indexOf(",");
@@ -17,16 +17,19 @@ function dataUrlToBlob(dataUrl: string): Blob {
 
 export class AnnotationStage {
 	stage: Konva.Stage;
+	private container: HTMLDivElement;
 	private bgLayer: Konva.Layer;
 	private drawLayer: Konva.Layer;
 	private annotations: Annotation[] = [];
 	private redoStack: Annotation[] = [];
-	private nodes = new Map<Annotation, Konva.Shape>();
+	private nodes = new Map<Annotation, Konva.Shape | Konva.Text>();
 	private currentTool: AnnotationKind = "pen";
 	private palette: BasePalette = { ...DEFAULT_PALETTE };
-	private drawing: { annotation: Annotation; startedAtPointer: { x: number; y: number } } | null = null;
+	private drawing: { annotation: Exclude<Annotation, { kind: "text" }>; startedAtPointer: { x: number; y: number } } | null = null;
+	private textEditor: HTMLTextAreaElement | null = null;
 
 	constructor(container: HTMLDivElement, image: HTMLImageElement) {
+		this.container = container;
 		const width = image.naturalWidth;
 		const height = image.naturalHeight;
 		this.stage = new Konva.Stage({
@@ -74,6 +77,7 @@ export class AnnotationStage {
 
 	setTool(tool: AnnotationKind): void {
 		this.currentTool = tool;
+		this.commitTextEditor();
 	}
 
 	setPaletteColor(color: string): void {
@@ -113,6 +117,7 @@ export class AnnotationStage {
 	}
 
 	clearAll(): void {
+		this.commitTextEditor();
 		for (const node of this.nodes.values()) node.destroy();
 		this.nodes.clear();
 		this.annotations = [];
@@ -124,28 +129,38 @@ export class AnnotationStage {
 		return this.annotations.length === 0;
 	}
 
-	hasRedo(): boolean {
-		return this.redoStack.length > 0;
-	}
-
 	canUndo(): boolean {
 		return this.annotations.length > 0;
 	}
 
+	canRedo(): boolean {
+		return this.redoStack.length > 0;
+	}
+
 	async toBlob(): Promise<Blob> {
+		this.commitTextEditor();
 		const dataUrl = this.stage.toDataURL({ pixelRatio: 1 / this.stage.scaleX(), mimeType: "image/png" });
 		return dataUrlToBlob(dataUrl);
 	}
 
 	destroy(): void {
+		this.commitTextEditor();
 		this.stage.destroy();
 	}
 
 	private bindPointer(): void {
 		this.stage.on("mousedown touchstart", (e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) => {
 			(e.evt as Event).preventDefault();
+			if (this.textEditor) {
+				this.commitTextEditor();
+				return;
+			}
 			const point = this.getStagePointer();
 			if (!point) return;
+			if (this.currentTool === "text") {
+				this.openTextEditor(point);
+				return;
+			}
 			this.startStroke(point);
 		});
 		this.stage.on("mousemove touchmove", (e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) => {
@@ -172,7 +187,7 @@ export class AnnotationStage {
 
 	private startStroke(point: { x: number; y: number }): void {
 		const tool = this.currentTool;
-		let annotation: Annotation;
+		let annotation: Exclude<Annotation, { kind: "text" }>;
 		switch (tool) {
 			case "pen":
 				annotation = { kind: "pen", points: [point.x, point.y], color: this.palette.color, strokeWidth: this.palette.strokeWidth };
@@ -186,6 +201,8 @@ export class AnnotationStage {
 			case "blackout":
 				annotation = { kind: "blackout", x: point.x, y: point.y, width: 0, height: 0 };
 				break;
+			case "text":
+				return;
 		}
 		this.drawing = { annotation, startedAtPointer: point };
 		this.addNode(annotation);
@@ -234,6 +251,73 @@ export class AnnotationStage {
 		this.drawLayer.batchDraw();
 	}
 
+	private openTextEditor(point: { x: number; y: number }): void {
+		this.commitTextEditor();
+		const scale = this.stage.scaleX() || 1;
+		const screenX = point.x * scale;
+		const screenY = point.y * scale;
+		const editor = activeDocument.createElement("textarea");
+		editor.addClass("toolbox-annotation-text-editor");
+		editor.dataset.left = String(screenX);
+		editor.dataset.top = String(screenY);
+		editor.dataset.fontSize = String(DEFAULT_TEXT_FONT_SIZE * scale);
+		editor.dataset.color = this.palette.color;
+		editor.placeholder = "Type text. Enter to confirm, esc to cancel.";
+		this.container.appendChild(editor);
+		this.textEditor = editor;
+		this.positionTextEditor(editor, screenX, screenY, scale);
+		editor.focus();
+		editor.addEventListener("keydown", (e) => {
+			if (e.key === "Enter" && !e.shiftKey) {
+				e.preventDefault();
+				this.commitTextEditor();
+			} else if (e.key === "Escape") {
+				e.preventDefault();
+				this.cancelTextEditor();
+			}
+		});
+		editor.addEventListener("blur", () => {
+			this.commitTextEditor();
+		});
+	}
+
+	private positionTextEditor(editor: HTMLTextAreaElement, screenX: number, screenY: number, scale: number): void {
+		editor.style.left = `${screenX}px`;
+		editor.style.top = `${screenY}px`;
+		editor.style.fontSize = `${DEFAULT_TEXT_FONT_SIZE * scale}px`;
+		editor.style.color = this.palette.color;
+	}
+
+	private commitTextEditor(): void {
+		const editor = this.textEditor;
+		if (!editor) return;
+		const text = editor.value.trim();
+		const x = Number(editor.dataset.left ?? "0") / (this.stage.scaleX() || 1);
+		const y = Number(editor.dataset.top ?? "0") / (this.stage.scaleY() || 1);
+		const color = editor.dataset.color ?? this.palette.color;
+		this.textEditor = null;
+		editor.remove();
+		if (!text) return;
+		const annotation: Annotation = {
+			kind: "text",
+			x,
+			y,
+			text,
+			color,
+			fontSize: DEFAULT_TEXT_FONT_SIZE,
+		};
+		this.annotations.push(annotation);
+		this.addNode(annotation);
+		this.redoStack = [];
+	}
+
+	private cancelTextEditor(): void {
+		const editor = this.textEditor;
+		if (!editor) return;
+		this.textEditor = null;
+		editor.remove();
+	}
+
 	private addNode(a: Annotation): void {
 		const node = this.buildNode(a);
 		this.nodes.set(a, node);
@@ -248,7 +332,7 @@ export class AnnotationStage {
 		this.drawLayer.batchDraw();
 	}
 
-	private buildNode(a: Annotation): Konva.Shape {
+	private buildNode(a: Annotation): Konva.Shape | Konva.Text {
 		switch (a.kind) {
 			case "pen":
 				return new Konva.Line({
@@ -285,10 +369,20 @@ export class AnnotationStage {
 					height: a.height,
 					fill: "#000000",
 				});
+			case "text":
+				return new Konva.Text({
+					x: a.x,
+					y: a.y,
+					text: a.text,
+					fontSize: a.fontSize,
+					fontFamily: "sans-serif",
+					fontStyle: "bold",
+					fill: a.color,
+				});
 		}
 	}
 
-	private applyToNode(a: Annotation, node: Konva.Shape): void {
+	private applyToNode(a: Annotation, node: Konva.Shape | Konva.Text): void {
 		switch (a.kind) {
 			case "pen":
 				(node as Konva.Line).points(a.points);
@@ -301,6 +395,11 @@ export class AnnotationStage {
 				break;
 			case "arrow":
 				(node as Konva.Arrow).points([a.x1, a.y1, a.x2, a.y2]);
+				break;
+			case "text":
+				node.position({ x: a.x, y: a.y });
+				(node as Konva.Text).text(a.text);
+				(node as Konva.Text).fill(a.color);
 				break;
 		}
 	}

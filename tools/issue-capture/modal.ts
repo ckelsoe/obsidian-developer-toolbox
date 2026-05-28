@@ -3,7 +3,7 @@ import type { ToolboxLib, CapturedContext } from "../../lib/types";
 import type DeveloperToolboxPlugin from "../../main";
 import { AnnotationStage } from "./annotation/stage";
 import type { AnnotationKind } from "./annotation/types";
-import { PALETTE } from "./annotation/types";
+import { PALETTE, STROKE_WIDTHS } from "./annotation/types";
 import type { CapturedImage } from "./capture";
 import { buildPayload } from "./payload";
 import { ISSUE_TYPES, type IssueCaptureSettings, type IssueType } from "./types";
@@ -89,24 +89,38 @@ export class IssueDialog extends Modal {
 			{ id: "pen", icon: "pencil", label: "Pen" },
 			{ id: "box", icon: "square", label: "Box" },
 			{ id: "arrow", icon: "arrow-up-right", label: "Arrow" },
+			{ id: "text", icon: "type", label: "Text" },
 			{ id: "blackout", icon: "eye-off", label: "Blackout (PII)" },
 		];
 
 		for (const tool of tools) {
-			const btn = parent.createEl("button", { cls: "toolbox-annotation-tool", attr: { "aria-label": tool.label, type: "button" } });
+			const btn = parent.createEl("button", { cls: "toolbox-annotation-tool", attr: { "aria-label": tool.label, type: "button", "data-tool": tool.id } });
 			setIcon(btn, tool.icon);
-			btn.dataset.tool = tool.id;
 			btn.addEventListener("click", () => {
 				this.annotationStage?.setTool(tool.id);
 				this.refreshToolbarActive(parent);
 			});
 		}
 
+		const widthGroup = parent.createDiv({ cls: "toolbox-annotation-widths" });
+		for (const width of STROKE_WIDTHS) {
+			const btn = widthGroup.createEl("button", {
+				cls: "toolbox-annotation-width",
+				attr: { "aria-label": `${width.label} stroke`, type: "button", "data-width": width.id, title: `${width.label} (${width.px}px)` },
+			});
+			btn.createSpan({ cls: `toolbox-annotation-width-bar toolbox-annotation-width-bar-${width.id}` });
+			btn.addEventListener("click", () => {
+				this.annotationStage?.setStrokeWidth(width.px);
+				this.refreshToolbarActive(parent);
+			});
+		}
+
 		const colorGroup = parent.createDiv({ cls: "toolbox-annotation-colors" });
 		for (const color of PALETTE) {
-			const swatch = colorGroup.createEl("button", { cls: "toolbox-annotation-color", attr: { "aria-label": `Color ${color}`, type: "button" } });
-			swatch.style.setProperty("--swatch-color", color);
-			swatch.dataset.color = color;
+			const swatch = colorGroup.createEl("button", {
+				cls: "toolbox-annotation-color",
+				attr: { "aria-label": `Color ${color}`, type: "button", "data-color": color },
+			});
 			swatch.addEventListener("click", () => {
 				this.annotationStage?.setPaletteColor(color);
 				this.refreshToolbarActive(parent);
@@ -143,11 +157,16 @@ export class IssueDialog extends Modal {
 		if (!stage) return;
 		const activeTool = stage.getCurrentTool();
 		const activeColor = stage.getPalette().color;
+		const activeWidth = stage.getPalette().strokeWidth;
+		const activeWidthId = STROKE_WIDTHS.find((w) => w.px === activeWidth)?.id ?? null;
 		toolbar.querySelectorAll<HTMLElement>(".toolbox-annotation-tool").forEach((btn) => {
 			btn.toggleClass("is-active", btn.dataset.tool === activeTool);
 		});
 		toolbar.querySelectorAll<HTMLElement>(".toolbox-annotation-color").forEach((btn) => {
 			btn.toggleClass("is-active", btn.dataset.color === activeColor);
+		});
+		toolbar.querySelectorAll<HTMLElement>(".toolbox-annotation-width").forEach((btn) => {
+			btn.toggleClass("is-active", btn.dataset.width === activeWidthId);
 		});
 	}
 
@@ -184,7 +203,8 @@ export class IssueDialog extends Modal {
 		const list = content.createDiv({ cls: "toolbox-issue-context-list" });
 		list.createDiv({ text: `Obsidian ${this.context.obsidianVersion} / ${this.context.osFamily}${this.context.vaultName ? " / vault: " + this.context.vaultName : ""}` });
 		if (this.context.activeFile) {
-			list.createDiv({ text: `Active file: ${this.context.activeFile} (${this.context.activeViewMode})` });
+			const mode = this.context.activeViewMode === "unknown" ? "" : ` (${this.context.activeViewMode})`;
+			list.createDiv({ text: `Active file: ${this.context.activeFile}${mode}` });
 		}
 		if (this.context.enabledPluginIds) {
 			list.createDiv({ text: `Plugins enabled: ${this.context.enabledPluginIds.length}` });

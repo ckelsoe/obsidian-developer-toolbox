@@ -25,16 +25,28 @@ function detectObsidianVersion(): string {
 	return match?.[1] ?? "unknown";
 }
 
-function detectViewMode(plugin: DeveloperToolboxPlugin): CapturedContext["activeViewMode"] {
-	const view = plugin.app.workspace.getActiveViewOfType(MarkdownView);
-	if (!view) return "unknown";
+function modeFromView(view: MarkdownView): CapturedContext["activeViewMode"] {
 	const mode = view.getMode();
 	if (mode === "source") {
 		const state = view.getState() as { source?: boolean } | undefined;
-		if (state?.source === false) return "live-preview";
-		return "source";
+		return state?.source === false ? "live-preview" : "source";
 	}
 	if (mode === "preview") return "preview";
+	return "unknown";
+}
+
+function detectViewMode(plugin: DeveloperToolboxPlugin): CapturedContext["activeViewMode"] {
+	const focused = plugin.app.workspace.getActiveViewOfType(MarkdownView);
+	if (focused) return modeFromView(focused);
+	const activeFile = plugin.app.workspace.getActiveFile();
+	if (!activeFile) return "unknown";
+	const leaves = plugin.app.workspace.getLeavesOfType("markdown");
+	for (const leaf of leaves) {
+		const view = leaf.view;
+		if (view instanceof MarkdownView && view.file?.path === activeFile.path) {
+			return modeFromView(view);
+		}
+	}
 	return "unknown";
 }
 
