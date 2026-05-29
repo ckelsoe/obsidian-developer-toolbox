@@ -292,3 +292,7 @@
 .toolbox-reloader-status {
 	cursor: pointer;
 }
+
+.toolbox-reloader-log-input {
+	width: 100%;
+}

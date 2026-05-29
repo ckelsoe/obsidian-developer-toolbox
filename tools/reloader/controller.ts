@@ -4,6 +4,7 @@ import type { ReloaderSettings } from "./types";
 import { PluginReloadWatcher } from "./watcher";
 import { reloadPlugin, reloadedLabel, type ReloadResult } from "./reload";
 import { readPluginVersionFromDisk } from "../../lib/manifest-version";
+import { ReloadLog } from "./log";
 
 type Ctx = ToolContext<ReloaderSettings>;
 
@@ -31,8 +32,11 @@ export class ReloaderController {
 	// When this controller instance loaded. Updates on every self-reload, so the
 	// status bar confirms a reload happened even when the version did not change.
 	private readonly loadedAt = nowHms();
+	private readonly log: ReloadLog;
 
-	constructor(private ctx: Ctx) {}
+	constructor(private ctx: Ctx) {
+		this.log = new ReloadLog(ctx.app, ctx.settings);
+	}
 
 	attachIcon(el: HTMLElement): void {
 		this.iconEl = el;
@@ -94,6 +98,7 @@ export class ReloaderController {
 			this.ctx.app,
 			this.ctx.settings,
 			(id) => void this.onChange(id),
+			this.log,
 		);
 		this.watcher.start();
 	}
@@ -144,6 +149,7 @@ export class ReloaderController {
 		if (ok.length) parts.push(`Reloaded: ${ok.join(", ")}`);
 		if (failed.length) parts.push(`Failed: ${failed.join(", ")}`);
 		new Notice(parts.join(" | "), failed.length ? 8000 : 3000);
+		this.log.append(`manual reload — ${parts.join(" | ")}`);
 		if (ok.length) this.setState("done");
 	}
 
@@ -156,13 +162,19 @@ export class ReloaderController {
 		} else {
 			const name = this.ctx.app.plugins.manifests[id]?.name ?? id;
 			this.diag(`${name} changed, needs reload.`);
+			this.log.append(`flagged reload needed: ${name}`);
 			this.setState("dirty");
 		}
 	}
 
 	private notify(result: ReloadResult): void {
-		if (result.ok) this.diag(`Reloaded ${reloadedLabel(result)}.`);
-		else this.diag(`Reload failed for ${result.name}: ${result.error}`, true);
+		if (result.ok) {
+			this.diag(`Reloaded ${reloadedLabel(result)}.`);
+			this.log.append(`reloaded ${reloadedLabel(result)}`);
+		} else {
+			this.diag(`Reload failed for ${result.name}: ${result.error}`, true);
+			this.log.append(`reload failed: ${result.name}: ${result.error}`);
+		}
 	}
 
 	private diag(message: string, force = false): void {

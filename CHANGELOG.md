@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-05-29
+
+### Added
+- Reloader event log (opt-in): appends every watcher and reload event to a timestamped Markdown file in the vault (default `developer-toolbox-reloader-log.md`). Records watcher start, each detected file change with its filename, and each reload outcome. Writes are serialized so a build's burst of events cannot interleave. Settings expose a toggle, the log path, and an Open button. Useful for confirming the watcher fires and for spotting events too fast to see on screen.
+
+### Changed
+- Reloading a plugin now re-scans manifests from disk (via Obsidian's internal `loadManifests`) between disable and enable, so the version shown in Obsidian's Community plugins list reflects the freshly built `manifest.json` instead of the value cached at startup. Best-effort and guarded against the internal method being absent.
+
+### Fixed
+- File watcher no longer fires phantom reloads. Events with no filename (emitted by some platforms on rename or atomic writes) were bypassing the watched-files filter and triggering a reload roughly every few minutes when the folder was touched, for example by Obsidian rewriting `data.json`. The filter now requires a known filename.
+
 ## [0.2.0] - 2026-05-28
 
 ### Added

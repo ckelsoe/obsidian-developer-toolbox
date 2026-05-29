@@ -44,6 +44,33 @@ export function renderReloaderSettings(container: HTMLElement, ctx: Ctx): void {
 			});
 		});
 
+	new Setting(container)
+		.setName("Write event log")
+		.setDesc("Append every watcher and reload event to a timestamped Markdown file in the vault. Useful for confirming the watcher fires and spotting events you cannot catch on screen.")
+		.addToggle((toggle) => {
+			toggle.setValue(ctx.settings.writeLog).onChange(async (value) => {
+				ctx.settings.writeLog = value;
+				await saveSettings(ctx.plugin);
+			});
+		});
+
+	new Setting(container)
+		.setName("Log file path")
+		.setDesc("Vault-relative path for the event log.")
+		.addText((t) => {
+			t.setValue(ctx.settings.logPath);
+			t.inputEl.addClass("toolbox-reloader-log-input");
+			t.onChange(async (value) => {
+				ctx.settings.logPath = value.trim() || "developer-toolbox-reloader-log.md";
+				await saveSettings(ctx.plugin);
+			});
+		})
+		.addButton((btn) => {
+			btn.setButtonText("Open").onClick(() => {
+				void ctx.app.workspace.openLinkText(ctx.settings.logPath, "");
+			});
+		});
+
 	new Setting(container).setName("Dev plugins").setHeading();
 
 	const listEl = container.createDiv({ cls: "toolbox-reloader-list" });

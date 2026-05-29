@@ -10,6 +10,10 @@ export interface ReloaderSettings {
 	// the whole point of this tool is that a silent watcher failure becomes
 	// a visible one.
 	showDiagnostics: boolean;
+	// Append every watcher and reload event to a timestamped markdown file.
+	// Opt-in: useful for verifying the watcher fires and spotting phantom events.
+	writeLog: boolean;
+	logPath: string;
 }
 
 export const DEFAULT_RELOADER_SETTINGS: ReloaderSettings = {
@@ -18,4 +22,6 @@ export const DEFAULT_RELOADER_SETTINGS: ReloaderSettings = {
 	autoWatch: false,
 	watchDebounceMs: 250,
 	showDiagnostics: true,
+	writeLog: false,
+	logPath: "developer-toolbox-reloader-log.md",
 };

@@ -1,5 +1,6 @@
 import { FileSystemAdapter, Notice, type App } from "obsidian";
 import type { ReloaderSettings } from "./types";
+import type { ReloadLog } from "./log";
 
 // A rebuild touches one of these. Watch the plugin folder and react only to
 // these names so unrelated writes (data.json on settings change) are ignored.
@@ -41,6 +42,7 @@ export class PluginReloadWatcher {
 		private app: App,
 		private settings: ReloaderSettings,
 		private onChange: (id: string) => void,
+		private log: ReloadLog,
 	) {}
 
 	start(): void {
@@ -66,7 +68,12 @@ export class PluginReloadWatcher {
 				// atomic rename, which invalidates a file-bound watch after the
 				// first build. A directory watch survives the rename.
 				const watcher = fs.watch(dir, (_event, filename) => {
-					if (filename && !WATCHED_FILES.has(filename)) return;
+					// Only react to the build-output files. Ignore events with no
+					// filename (some platforms emit null on rename/atomic writes) and
+					// writes to other files like data.json, which Obsidian touches on
+					// its own and would otherwise fire phantom reloads every few minutes.
+					if (!filename || !WATCHED_FILES.has(filename)) return;
+					this.log.append(`detected change: ${filename} (${manifest.name})`);
 					this.schedule(id);
 				});
 				this.watchers.push(watcher);
@@ -81,6 +88,7 @@ export class PluginReloadWatcher {
 
 		if (watched.length) {
 			this.diag(`Watching ${watched.length} plugin(s): ${watched.join(", ")}.`);
+			this.log.append(`watching ${watched.length} plugin(s): ${watched.join(", ")}`);
 		}
 	}
 
