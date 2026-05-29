@@ -9,6 +9,17 @@ export const ISSUE_TYPES: readonly { id: IssueType; label: string }[] = [
 	{ id: "note", label: "Note" },
 ];
 
+import type { SerializedAnnotations } from "./annotation/types";
+
+// D3: a paused annotation session. Holds the original (unflattened) screenshot
+// plus the editable annotation model so reopening restores editable objects
+// rather than a baked PNG.
+export interface AnnotationDraft {
+	imageDataUrl: string;
+	capturedAt: number;
+	serialized: SerializedAnnotations;
+}
+
 export interface IssueCaptureSettings {
 	enabled: boolean;
 	immediateSettleMs: number;
@@ -21,6 +32,9 @@ export interface IssueCaptureSettings {
 	includePluginList: boolean;
 	includeVaultName: boolean;
 	pathStyle: "basename" | "vault-relative" | "absolute";
+	// D3 draft persistence.
+	saveAnnotationDraft: boolean;
+	annotationDraft: AnnotationDraft | null;
 }
 
 export const DEFAULT_ISSUE_CAPTURE_SETTINGS: IssueCaptureSettings = {
@@ -35,4 +49,6 @@ export const DEFAULT_ISSUE_CAPTURE_SETTINGS: IssueCaptureSettings = {
 	includePluginList: true,
 	includeVaultName: true,
 	pathStyle: "vault-relative",
+	saveAnnotationDraft: true,
+	annotationDraft: null,
 };

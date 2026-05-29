@@ -1,8 +1,9 @@
 import { Notice } from "obsidian";
 import type { Disposable, ToolContext, ToolHandle } from "../types";
 import { DEFAULT_ISSUE_CAPTURE_SETTINGS, type IssueCaptureSettings } from "./types";
-import { capture } from "./capture";
+import { capture, type CapturedImage } from "./capture";
 import { IssueDialog } from "./modal";
+import { dataUrlToBlob } from "./annotation/stage";
 import { renderIssueCaptureSettings } from "./settings";
 
 type Ctx = ToolContext<IssueCaptureSettings>;
@@ -40,6 +41,37 @@ class IssueCaptureHandlers {
 		} catch (e) {
 			new Notice("Screenshot failed: " + (e as Error).message, 8000);
 		}
+	}
+
+	// D3: reopen the last paused annotation session with its objects editable.
+	resumeDraft(): void {
+		const draft = this.ctx.settings.annotationDraft;
+		if (!draft) {
+			new Notice("No saved annotation draft to resume.", 3000);
+			return;
+		}
+		const settings = this.ctx.settings;
+		const blob = dataUrlToBlob(draft.imageDataUrl);
+		const capturedImage: CapturedImage = {
+			pngBlob: blob,
+			widthPx: draft.serialized.width,
+			heightPx: draft.serialized.height,
+			capturedAt: draft.capturedAt,
+			path: "capturePage",
+		};
+		const context = this.ctx.lib.context.capture({
+			includeVaultName: settings.includeVaultName,
+			includePluginList: settings.includePluginList,
+			pathStyle: settings.pathStyle,
+		});
+		const dialog = new IssueDialog(this.ctx.app, this.ctx.plugin, {
+			capturedImage,
+			prefilledContext: context,
+			settings,
+			lib: this.ctx.lib,
+			restore: draft.serialized,
+		});
+		dialog.open();
 	}
 }
 
@@ -93,6 +125,11 @@ const issueCapture: ToolHandle<IssueCaptureSettings> = {
 			id: "text-only-issue",
 			name: "Text-only issue",
 			callback: () => void handlers.startCapture({ withScreenshot: false }),
+		});
+		ctx.plugin.addCommand({
+			id: "resume-annotation-draft",
+			name: "Resume annotation draft",
+			callback: () => handlers.resumeDraft(),
 		});
 
 		return {

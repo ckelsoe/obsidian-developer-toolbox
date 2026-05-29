@@ -1,6 +1,6 @@
 {
 	"name": "developer-toolbox",
-	"version": "0.5.0",
+	"version": "0.6.0",
 	"description": "Capture annotated screenshots and structured issue context for AI-assisted plugin development.",
 	"main": "main.js",
 	"type": "module",
