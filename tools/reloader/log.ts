@@ -1,5 +1,6 @@
 import { TFile, normalizePath, type App } from "obsidian";
 import type { ReloaderSettings } from "./types";
+import { ensureVaultFolder } from "../../lib/vault-paths";
 
 function nowStamp(): string {
 	const d = new Date();
@@ -25,7 +26,7 @@ export class ReloadLog {
 	) {}
 
 	get path(): string {
-		return normalizePath(this.settings.logPath || "developer-toolbox-reloader-log.md");
+		return normalizePath(this.settings.logPath || "dev-tools/dev-logs/reloader-log.md");
 	}
 
 	append(message: string): void {
@@ -37,11 +38,14 @@ export class ReloadLog {
 	}
 
 	private async write(line: string): Promise<void> {
-		const file = this.app.vault.getFileByPath(this.path);
+		const path = this.path;
+		const file = this.app.vault.getFileByPath(path);
 		if (file instanceof TFile) {
 			await this.app.vault.append(file, line);
-		} else {
-			await this.app.vault.create(this.path, LOG_HEADER + line);
+			return;
 		}
+		const slash = path.lastIndexOf("/");
+		if (slash > 0) await ensureVaultFolder(this.app, path.slice(0, slash));
+		await this.app.vault.create(path, LOG_HEADER + line);
 	}
 }

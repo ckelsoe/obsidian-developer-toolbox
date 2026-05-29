@@ -21,8 +21,13 @@ export default class DeveloperToolboxPlugin extends Plugin {
 
 		for (const tool of this.tools) {
 			const stored = this.data.tools[tool.id];
-			if (!stored) {
-				this.data.tools[tool.id] = { ...tool.defaultSettings };
+			// Merge defaults under any stored values so newly added settings keys
+			// are never undefined for an existing install (which would throw when
+			// passed to normalizePath and similar). Stored values win.
+			const merged = { ...tool.defaultSettings, ...(stored ?? {}) };
+			const changed = !stored || JSON.stringify(merged) !== JSON.stringify(stored);
+			this.data.tools[tool.id] = merged;
+			if (changed) {
 				await saveSettings(this);
 			}
 			if (this.data.tools[tool.id]?.enabled) {

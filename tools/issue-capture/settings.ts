@@ -38,7 +38,29 @@ export function renderIssueCaptureSettings(container: HTMLElement, ctx: Ctx): vo
 			t.setValue(ctx.settings.screenshotFolder);
 			t.inputEl.addClass("toolbox-issue-folder-input");
 			t.onChange(async (value) => {
-				ctx.settings.screenshotFolder = value.trim() || "dev-screenshots";
+				ctx.settings.screenshotFolder = value.trim() || "dev-tools/dev-screenshots";
+				await saveSettings(ctx.plugin);
+			});
+		});
+
+	new Setting(container)
+		.setName("Save issue file")
+		.setDesc("On copy, also write an issue note to the vault with the details and a link to the screenshot.")
+		.addToggle((toggle) => {
+			toggle.setValue(ctx.settings.saveIssueFile).onChange(async (value) => {
+				ctx.settings.saveIssueFile = value;
+				await saveSettings(ctx.plugin);
+			});
+		});
+
+	new Setting(container)
+		.setName("Issue folder")
+		.setDesc("Vault-relative folder where issue notes are saved.")
+		.addText((t) => {
+			t.setValue(ctx.settings.issueFolder);
+			t.inputEl.addClass("toolbox-issue-folder-input");
+			t.onChange(async (value) => {
+				ctx.settings.issueFolder = value.trim() || "dev-tools/dev-issues";
 				await saveSettings(ctx.plugin);
 			});
 		});

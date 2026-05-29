@@ -56,3 +56,58 @@ export function buildPayload(inputs: PayloadInputs): string {
 
 	return lines.join("\n");
 }
+
+export interface IssueDocumentInputs {
+	// Vault-relative path to the saved screenshot, or null when none was captured.
+	screenshotPath: string | null;
+	type: IssueType;
+	description: string;
+	context: CapturedContext;
+	capturedAt: number;
+}
+
+function issueTitle(inputs: IssueDocumentInputs): string {
+	const firstLine = inputs.description.trim().split("\n")[0]?.trim() ?? "";
+	const summary = firstLine.length > 60 ? `${firstLine.slice(0, 57)}...` : firstLine;
+	return summary ? `${TYPE_LABELS[inputs.type]}: ${summary}` : TYPE_LABELS[inputs.type];
+}
+
+function formatStamp(epoch: number): string {
+	const d = new Date(epoch);
+	const pad = (n: number): string => (n < 10 ? `0${n}` : `${n}`);
+	return (
+		`${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ` +
+		`${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
+	);
+}
+
+// Builds the markdown for a saved issue note. Unlike the clipboard payload, this
+// is a standalone vault note: it has a title heading, a captured-at line, and
+// embeds the screenshot with an Obsidian wikilink so it renders inline.
+export function buildIssueDocument(inputs: IssueDocumentInputs): string {
+	const lines: string[] = [];
+	lines.push(`# ${issueTitle(inputs)}`);
+	lines.push("");
+	lines.push(`**Type:** ${TYPE_LABELS[inputs.type]}`);
+	lines.push(`**Where:** ${formatWhere(inputs.context)}`);
+	lines.push(`**Context:** ${formatContext(inputs.context)}`);
+	if (inputs.context.enabledPluginIds && inputs.context.enabledPluginIds.length > 0) {
+		lines.push(`**Plugins enabled:** ${inputs.context.enabledPluginIds.length}`);
+	}
+	lines.push(`**Captured:** ${formatStamp(inputs.capturedAt)}`);
+
+	const description = inputs.description.trim();
+	if (description) {
+		lines.push("");
+		lines.push(description);
+	}
+
+	if (inputs.screenshotPath) {
+		lines.push("");
+		lines.push("## Screenshot");
+		lines.push("");
+		lines.push(`![[${inputs.screenshotPath}]]`);
+	}
+
+	return lines.join("\n") + "\n";
+}

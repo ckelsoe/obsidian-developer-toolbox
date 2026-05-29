@@ -1,4 +1,4 @@
-import { buildPayload } from "../tools/issue-capture/payload";
+import { buildPayload, buildIssueDocument } from "../tools/issue-capture/payload";
 import type { CapturedContext } from "../lib/types";
 
 const baseContext: CapturedContext = {
@@ -92,5 +92,50 @@ describe("buildPayload", () => {
 		});
 		expect(payload).toContain("**Context:** Obsidian 1.12.7 / windows");
 		expect(payload).not.toContain("vault:");
+	});
+});
+
+describe("buildIssueDocument", () => {
+	test("builds a titled note with metadata and an embedded screenshot", () => {
+		const doc = buildIssueDocument({
+			screenshotPath: "dev-tools/dev-screenshots/2026-05-29-101500.png",
+			type: "defect",
+			description: "Pin click clears the highlight underneath",
+			context: baseContext,
+			capturedAt: 0,
+		});
+
+		expect(doc).toContain("# Defect: Pin click clears the highlight underneath");
+		expect(doc).toContain("**Type:** Defect");
+		expect(doc).toContain("**Where:** README.md (live-preview)");
+		expect(doc).toContain("**Captured:** ");
+		expect(doc).toContain("## Screenshot");
+		expect(doc).toContain("![[dev-tools/dev-screenshots/2026-05-29-101500.png]]");
+	});
+
+	test("omits the screenshot section when there is no screenshot", () => {
+		const doc = buildIssueDocument({
+			screenshotPath: null,
+			type: "question",
+			description: "How does X work?",
+			context: baseContext,
+			capturedAt: 0,
+		});
+
+		expect(doc).toContain("# Question: How does X work?");
+		expect(doc).not.toContain("## Screenshot");
+		expect(doc).not.toContain("![[");
+	});
+
+	test("falls back to the type label as title when description is empty", () => {
+		const doc = buildIssueDocument({
+			screenshotPath: null,
+			type: "note",
+			description: "   ",
+			context: baseContext,
+			capturedAt: 0,
+		});
+
+		expect(doc).toMatch(/^# Note\n/);
 	});
 });

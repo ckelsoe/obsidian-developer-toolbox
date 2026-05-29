@@ -23,5 +23,5 @@ export const DEFAULT_RELOADER_SETTINGS: ReloaderSettings = {
 	watchDebounceMs: 250,
 	showDiagnostics: true,
 	writeLog: false,
-	logPath: "developer-toolbox-reloader-log.md",
+	logPath: "dev-tools/dev-logs/reloader-log.md",
 };

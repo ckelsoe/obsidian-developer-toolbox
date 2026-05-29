@@ -61,7 +61,7 @@ export function renderReloaderSettings(container: HTMLElement, ctx: Ctx): void {
 			t.setValue(ctx.settings.logPath);
 			t.inputEl.addClass("toolbox-reloader-log-input");
 			t.onChange(async (value) => {
-				ctx.settings.logPath = value.trim() || "developer-toolbox-reloader-log.md";
+				ctx.settings.logPath = value.trim() || "dev-tools/dev-logs/reloader-log.md";
 				await saveSettings(ctx.plugin);
 			});
 		})

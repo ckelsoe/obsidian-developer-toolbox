@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-05-29
+
+### Added
+- Issue notes: capturing an issue now also writes a Markdown note to the vault (default `dev-tools/dev-issues/`) with the type, context, description, and an embedded link to the screenshot when one was captured. On by default; toggle and folder are configurable in settings.
+
+### Changed
+- Output files are now grouped under a single `dev-tools/` parent folder: screenshots in `dev-tools/dev-screenshots/`, the reloader event log in `dev-tools/dev-logs/`, and issue notes in `dev-tools/dev-issues/`. Existing installs that kept the old default paths are migrated automatically; custom paths are preserved.
+- Folder creation now creates missing parent folders, so nested output paths work without manual setup.
+
+### Fixed
+- Settings defaults are merged into stored settings on load, so a newly added setting is never undefined for an existing install.
+
 ## [0.3.0] - 2026-05-29
 
 ### Added

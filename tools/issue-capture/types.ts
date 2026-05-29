@@ -13,6 +13,8 @@ export interface IssueCaptureSettings {
 	delayedCaptureSeconds: number;
 	defaultIssueType: IssueType;
 	screenshotFolder: string;
+	saveIssueFile: boolean;
+	issueFolder: string;
 	redactHomePath: boolean;
 	includePluginList: boolean;
 	includeVaultName: boolean;
@@ -23,7 +25,9 @@ export const DEFAULT_ISSUE_CAPTURE_SETTINGS: IssueCaptureSettings = {
 	enabled: true,
 	delayedCaptureSeconds: 3,
 	defaultIssueType: "defect",
-	screenshotFolder: "dev-screenshots",
+	screenshotFolder: "dev-tools/dev-screenshots",
+	saveIssueFile: true,
+	issueFolder: "dev-tools/dev-issues",
 	redactHomePath: true,
 	includePluginList: true,
 	includeVaultName: true,

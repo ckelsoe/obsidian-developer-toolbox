@@ -9,22 +9,41 @@ export interface ToolStoredSettings {
 }
 
 export interface ToolboxData {
-	version: 1;
+	version: number;
 	tools: Record<string, ToolStoredSettings>;
 }
 
+const DATA_VERSION = 2;
+
 const DEFAULT_DATA: ToolboxData = {
-	version: 1,
+	version: DATA_VERSION,
 	tools: {},
 };
+
+// v2: move the old flat default output paths into the dev-tools/ structure.
+// Only touches values still at their old default, so a user's custom path is
+// preserved. Idempotent: re-running finds the new values and does nothing.
+function migrateToDevTools(tools: Record<string, ToolStoredSettings>): void {
+	const issueCapture = tools["issue-capture"];
+	if (issueCapture && issueCapture.screenshotFolder === "dev-screenshots") {
+		issueCapture.screenshotFolder = "dev-tools/dev-screenshots";
+	}
+	const reloader = tools["reloader"];
+	if (reloader && reloader.logPath === "developer-toolbox-reloader-log.md") {
+		reloader.logPath = "dev-tools/dev-logs/reloader-log.md";
+	}
+}
 
 export async function loadSettings(plugin: DeveloperToolboxPlugin): Promise<ToolboxData> {
 	const raw = (await plugin.loadData()) as Partial<ToolboxData> | null;
 	if (!raw) return structuredClone(DEFAULT_DATA);
-	const version = raw.version === 1 ? 1 : 1;
+	const tools = { ...(raw.tools ?? {}) };
+	if (raw.version !== DATA_VERSION) {
+		migrateToDevTools(tools);
+	}
 	return {
-		version,
-		tools: { ...(raw.tools ?? {}) },
+		version: DATA_VERSION,
+		tools,
 	};
 }
 

@@ -5,7 +5,7 @@ import { AnnotationStage } from "./annotation/stage";
 import type { AnnotationKind } from "./annotation/types";
 import { PALETTE, STROKE_WIDTHS } from "./annotation/types";
 import type { CapturedImage } from "./capture";
-import { buildPayload } from "./payload";
+import { buildPayload, buildIssueDocument } from "./payload";
 import { ISSUE_TYPES, type IssueCaptureSettings, type IssueType } from "./types";
 
 interface IssueDialogOpts {
@@ -289,11 +289,40 @@ export class IssueDialog extends Modal {
 			}
 			const text = this.payloadTextarea?.getValue() ?? "";
 			await this.lib.clipboard.writeText(text);
-			new Notice("Copied issue payload to clipboard.", 2000);
+
+			let savedIssuePath: string | null = null;
+			if (this.settings.saveIssueFile) {
+				savedIssuePath = await this.saveIssueFile(savedPath);
+			}
+
+			new Notice(
+				savedIssuePath
+					? `Copied payload. Saved issue to ${savedIssuePath}`
+					: "Copied issue payload to clipboard.",
+				2500,
+			);
 			this.close();
 		} catch (e) {
 			new Notice("Copy failed: " + (e as Error).message, 6000);
 		}
+	}
+
+	private async saveIssueFile(screenshotPath: string | null): Promise<string> {
+		const folder = normalizePath(this.settings.issueFolder);
+		await this.lib.vaultPaths.ensureFolder(folder);
+		const when = this.capturedImage?.capturedAt ?? Date.now();
+		const stamp = formatTimestamp(when);
+		const targetRel = `${folder}/${stamp}-${this.issueType}.md`;
+		const unique = await this.lib.vaultPaths.suggestUnique(targetRel);
+		const doc = buildIssueDocument({
+			screenshotPath,
+			type: this.issueType,
+			description: this.description,
+			context: this.context,
+			capturedAt: when,
+		});
+		await this.app.vault.create(unique, doc);
+		return unique;
 	}
 
 	private async handleCopyPathOnly(): Promise<void> {
@@ -311,6 +340,6 @@ export class IssueDialog extends Modal {
 
 function formatTimestamp(epoch: number): string {
 	const d = new Date(epoch);
-	const pad = (n: number): string => String(n).padStart(2, "0");
+	const pad = (n: number): string => (n < 10 ? `0${n}` : `${n}`);
 	return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
 }
