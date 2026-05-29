@@ -3,6 +3,7 @@ import type { CapturedContext } from "../lib/types";
 
 const baseContext: CapturedContext = {
 	obsidianVersion: "1.12.7",
+	electronVersion: "39.8.3",
 	osFamily: "windows",
 	vaultName: "obs-test-vault",
 	activeFile: "README.md",

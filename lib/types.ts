@@ -6,6 +6,7 @@ export interface CaptureContextOpts {
 
 export interface CapturedContext {
 	obsidianVersion: string;
+	electronVersion: string;
 	osFamily: "windows" | "macos" | "linux";
 	vaultName: string | null;
 	activeFile: string | null;

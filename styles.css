@@ -73,6 +73,14 @@
 	background: var(--background-secondary);
 }
 
+.toolbox-state-inspector-blob {
+	width: 100%;
+	min-height: 9em;
+	font-family: var(--font-monospace);
+	resize: vertical;
+	background: var(--background-secondary);
+}
+
 .toolbox-issue-context-list > div {
 	font-size: var(--font-ui-small);
 	color: var(--text-muted);

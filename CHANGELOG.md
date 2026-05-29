@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-05-29
+
+### Added
+- State inspector: a new tool that shows the live environment as a browse-and-copy snapshot. Open it from the ribbon (`activity` icon) or the "Inspect live state" command to see the Obsidian version, Electron version, operating system, vault name, active file, view mode, leaf type, and enabled plugin count. Copy any single field, or copy the whole snapshot as one block. It respects the same include-vault-name, include-plugin-list, and path-style options as issue capture.
+- The captured context now includes the Electron version, so it also appears in issue-capture payloads and notes.
+
 ## [0.6.0] - 2026-05-29
 
 ### Added

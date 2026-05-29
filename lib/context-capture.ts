@@ -25,6 +25,15 @@ function detectObsidianVersion(): string {
 	return match?.[1] ?? "unknown";
 }
 
+function detectElectronVersion(): string {
+	// Same approach as detectObsidianVersion: Electron's default userAgent carries
+	// an "Electron/<version>" token. Avoids the node `process` global (not in this
+	// tsconfig's types). Falls back to "unknown" if the token is ever absent.
+	// eslint-disable-next-line obsidianmd/platform -- userAgent used for app version, not OS
+	const match = navigator.userAgent.match(/Electron\/([\d.]+)/i);
+	return match?.[1] ?? "unknown";
+}
+
 function modeFromView(view: MarkdownView): CapturedContext["activeViewMode"] {
 	const mode = view.getMode();
 	if (mode === "source") {
@@ -95,6 +104,7 @@ export function buildContextCapture(plugin: DeveloperToolboxPlugin): ToolboxLib[
 
 			return {
 				obsidianVersion: detectObsidianVersion(),
+				electronVersion: detectElectronVersion(),
 				osFamily: detectOsFamily(),
 				vaultName,
 				activeFile: renderedActiveFile,
