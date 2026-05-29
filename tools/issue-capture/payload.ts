@@ -11,6 +11,7 @@ export interface PayloadInputs {
 const TYPE_LABELS: Record<IssueType, string> = {
 	defect: "Defect",
 	enhancement: "Enhancement",
+	feedback: "Feedback",
 	question: "Question",
 	task: "Task",
 	note: "Note",

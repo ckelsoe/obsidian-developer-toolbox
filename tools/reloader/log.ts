@@ -1,5 +1,7 @@
-import { TFile, normalizePath, type App } from "obsidian";
+import { TFile, type App } from "obsidian";
 import type { ReloaderSettings } from "./types";
+import { RELOADER_LOG_FILENAME } from "./types";
+import type { ToolboxLib } from "../../lib/types";
 import { ensureVaultFolder } from "../../lib/vault-paths";
 
 function nowStamp(): string {
@@ -23,10 +25,12 @@ export class ReloadLog {
 	constructor(
 		private app: App,
 		private settings: ReloaderSettings,
+		private lib: ToolboxLib,
 	) {}
 
 	get path(): string {
-		return normalizePath(this.settings.logPath || "dev-tools/dev-logs/reloader-log.md");
+		const sub = this.settings.logSubfolder || "dev-logs";
+		return this.lib.storage.resolve(`${sub}/${RELOADER_LOG_FILENAME}`);
 	}
 
 	append(message: string): void {

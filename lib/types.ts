@@ -35,6 +35,12 @@ export interface ToolboxLib {
 		ensureFolder(relPath: string): Promise<void>;
 		suggestUnique(relPath: string): Promise<string>;
 	};
+	storage: {
+		// The shared root folder for tool output.
+		root(): string;
+		// Joins the storage root with a subfolder (or sub-path) and normalizes.
+		resolve(subpath: string): string;
+	};
 	ui: {
 		stackedRow(parent: HTMLElement, opts: { name: string; description?: string }): StackedRowResult;
 		countdownNotice(seconds: number, onTick?: (remaining: number) => void): CountdownNoticeHandle;

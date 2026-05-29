@@ -35,7 +35,7 @@ export class ReloaderController {
 	private readonly log: ReloadLog;
 
 	constructor(private ctx: Ctx) {
-		this.log = new ReloadLog(ctx.app, ctx.settings);
+		this.log = new ReloadLog(ctx.app, ctx.settings, ctx.lib);
 	}
 
 	attachIcon(el: HTMLElement): void {

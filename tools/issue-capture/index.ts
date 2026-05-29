@@ -53,8 +53,19 @@ const issueCapture: ToolHandle<IssueCaptureSettings> = {
 
 		const ribbonScreenshot = ctx.plugin.addRibbonIcon(
 			"camera",
-			"Capture screenshot for issue",
-			() => void handlers.startCapture({ withScreenshot: true }),
+			"Screenshot now",
+			() => void handlers.startCapture({
+				withScreenshot: true,
+				delayMs: ctx.settings.immediateSettleMs,
+			}),
+		);
+		const ribbonDelayed = ctx.plugin.addRibbonIcon(
+			"timer",
+			"Delayed screenshot",
+			() => void handlers.startCapture({
+				withScreenshot: true,
+				delayMs: ctx.settings.delayedCaptureSeconds * 1000,
+			}),
 		);
 		const ribbonIssue = ctx.plugin.addRibbonIcon(
 			"message-square-plus",
@@ -65,7 +76,10 @@ const issueCapture: ToolHandle<IssueCaptureSettings> = {
 		ctx.plugin.addCommand({
 			id: "screenshot-now",
 			name: "Screenshot now",
-			callback: () => void handlers.startCapture({ withScreenshot: true }),
+			callback: () => void handlers.startCapture({
+				withScreenshot: true,
+				delayMs: ctx.settings.immediateSettleMs,
+			}),
 		});
 		ctx.plugin.addCommand({
 			id: "delayed-screenshot",
@@ -84,6 +98,7 @@ const issueCapture: ToolHandle<IssueCaptureSettings> = {
 		return {
 			dispose: (): void => {
 				ribbonScreenshot.detach();
+				ribbonDelayed.detach();
 				ribbonIssue.detach();
 			},
 		};

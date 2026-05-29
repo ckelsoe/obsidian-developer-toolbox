@@ -1,6 +1,6 @@
 # Developer Toolbox
 
-[![CI](https://img.shields.io/github/actions/workflow/status/ckelsoe/obsidian-developer-toolbox/ci.yml?branch=main&label=CI&logo=github)](https://github.com/ckelsoe/obsidian-developer-toolbox/actions/workflows/ci.yml) [![Release](https://img.shields.io/github/actions/workflow/status/ckelsoe/obsidian-developer-toolbox/release.yml?label=Release&logo=github)](https://github.com/ckelsoe/obsidian-developer-toolbox/actions/workflows/release.yml) [![GitHub Downloads](https://img.shields.io/github/downloads/ckelsoe/obsidian-developer-toolbox/total?logo=github&label=Downloads)](https://github.com/ckelsoe/obsidian-developer-toolbox/releases) [![GitHub Stars](https://img.shields.io/github/stars/ckelsoe/obsidian-developer-toolbox?style=flat&logo=github&label=Stars)](https://github.com/ckelsoe/obsidian-developer-toolbox) [![Obsidian](https://img.shields.io/badge/Obsidian-v1.5.0%2B-7C3AED?logo=obsidian&logoColor=white)](https://obsidian.md) [![License](https://img.shields.io/github/license/ckelsoe/obsidian-developer-toolbox)](https://github.com/ckelsoe/obsidian-developer-toolbox/blob/main/LICENSE) [![Latest Release](https://img.shields.io/github/v/release/ckelsoe/obsidian-developer-toolbox?label=Latest)](https://github.com/ckelsoe/obsidian-developer-toolbox/releases/latest)
+[![CI](https://img.shields.io/github/actions/workflow/status/ckelsoe/obsidian-developer-toolbox/ci.yml?branch=main&label=CI&logo=github)](https://github.com/ckelsoe/obsidian-developer-toolbox/actions/workflows/ci.yml) [![Release](https://img.shields.io/github/actions/workflow/status/ckelsoe/obsidian-developer-toolbox/release.yml?label=Release&logo=github)](https://github.com/ckelsoe/obsidian-developer-toolbox/actions/workflows/release.yml) [![GitHub Downloads](https://img.shields.io/github/downloads/ckelsoe/obsidian-developer-toolbox/total?logo=github&label=Downloads)](https://github.com/ckelsoe/obsidian-developer-toolbox/releases) [![GitHub Stars](https://img.shields.io/github/stars/ckelsoe/obsidian-developer-toolbox?style=flat&logo=github&label=Stars)](https://github.com/ckelsoe/obsidian-developer-toolbox) [![Obsidian](https://img.shields.io/badge/Obsidian-v1.5.7%2B-7C3AED?logo=obsidian&logoColor=white)](https://obsidian.md) [![License](https://img.shields.io/github/license/ckelsoe/obsidian-developer-toolbox)](https://github.com/ckelsoe/obsidian-developer-toolbox/blob/main/LICENSE) [![Latest Release](https://img.shields.io/github/v/release/ckelsoe/obsidian-developer-toolbox?label=Latest)](https://github.com/ckelsoe/obsidian-developer-toolbox/releases/latest)
 
 A toolbox of developer-focused tools for Obsidian: capture annotated screenshots with structured issue context, and reload plugins live while you develop.
 
@@ -10,10 +10,12 @@ Developer Toolbox bundles several developer-focused tools under one plugin. Each
 
 ### Issue capture
 
-Capture a screenshot of your Obsidian window, annotate it, and generate a paste-ready markdown payload with structured context (active file, view mode, Obsidian version, OS, enabled plugins) for use with AI assistants or issue trackers.
+Capture a screenshot of your Obsidian window, annotate it, classify it, and generate a paste-ready Markdown payload with structured context (active file, view mode, Obsidian version, OS, enabled plugins) for use with AI assistants or issue trackers.
 
-- Screenshot the full window, including transient UI like menus, tooltips, and the command palette. A delayed capture gives you time to open them first.
+- Two capture modes: an immediate screenshot, and a delayed screenshot with a countdown that gives you time to open a menu, tooltip, or settings pane before the shot fires. Both capture the full window, including transient UI.
 - Annotate in place: freehand pen, box, arrow, text labels, and a blackout tool for redacting sensitive content, plus undo, redo, and clear.
+- Classify the capture (defect, enhancement, feedback, question, task, or note) and add a description.
+- Save an issue note: optionally writes a Markdown note to your vault with the details and an embedded link to the screenshot.
 - Privacy first: paths are redacted to vault-relative with your home directory hidden by default, and you review the exact payload before it is copied.
 
 ### Plugin reloader
@@ -56,6 +58,10 @@ BRAT lets power users install pre-release builds before they reach the marketpla
 Open the command palette and search for "Developer Toolbox", or use the ribbon icons on the left. Each tool is configured in Settings → Community plugins → Developer Toolbox, where you can enable or disable tools individually.
 
 This plugin is desktop only. Screenshot capture and plugin reloading rely on desktop APIs that are not available on Obsidian mobile.
+
+## Output
+
+Screenshots, issue notes, and the reloader log are saved under a single configurable storage folder (default `_dev-tools`), each in its own subfolder. Change the storage folder once in settings and all output moves with it.
 
 ## Contributing
 

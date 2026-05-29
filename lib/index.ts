@@ -1,3 +1,4 @@
+import { normalizePath } from "obsidian";
 import type DeveloperToolboxPlugin from "../main";
 import type { ToolboxLib } from "./types";
 import * as clipboard from "./clipboard";
@@ -16,6 +17,11 @@ export function buildLib(plugin: DeveloperToolboxPlugin): ToolboxLib {
 			vault: pathRedact.redactVault,
 		},
 		vaultPaths: buildVaultPaths(plugin),
+		storage: {
+			root: (): string => plugin.data.storageRoot,
+			resolve: (subpath: string): string =>
+				normalizePath(`${plugin.data.storageRoot}/${subpath}`),
+		},
 		ui: {
 			stackedRow,
 			countdownNotice,

@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-05-29
+
+### Added
+- New issue type: Feedback, for subjective input that is not a defect, enhancement, or question.
+- Separate ribbon icons for immediate (`camera`) and delayed (`timer`) screenshots, alongside the text-only issue icon.
+
+### Changed
+- Immediate screenshots now apply a short configurable settle (default 300 ms, slider 0-500 ms) so the triggering click and its highlight clear before the frame is grabbed, and the triggering element is blurred. The delayed countdown is now a slider (2-15 s, default 5 s).
+- Output paths are now a single shared "Storage folder" (default `_dev-tools`) plus a per-tool subfolder name. Set the root once and screenshots, issue notes, and the reloader log all move with it. Each subfolder setting shows the storage folder as its prefix. Existing installs are migrated: the storage root is set and each tool's subfolder is derived from its previous path; custom subfolder names are preserved.
+
 ## [0.4.0] - 2026-05-29
 
 ### Added

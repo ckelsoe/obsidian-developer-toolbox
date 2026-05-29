@@ -10,41 +10,74 @@ export interface ToolStoredSettings {
 
 export interface ToolboxData {
 	version: number;
+	// Root folder for all tool output. Tools save into subfolders of this.
+	storageRoot: string;
 	tools: Record<string, ToolStoredSettings>;
 }
 
-const DATA_VERSION = 2;
+const DATA_VERSION = 3;
+const DEFAULT_STORAGE_ROOT = "_dev-tools";
 
 const DEFAULT_DATA: ToolboxData = {
 	version: DATA_VERSION,
+	storageRoot: DEFAULT_STORAGE_ROOT,
 	tools: {},
 };
 
-// v2: move the old flat default output paths into the dev-tools/ structure.
-// Only touches values still at their old default, so a user's custom path is
-// preserved. Idempotent: re-running finds the new values and does nothing.
-function migrateToDevTools(tools: Record<string, ToolStoredSettings>): void {
-	const issueCapture = tools["issue-capture"];
-	if (issueCapture && issueCapture.screenshotFolder === "dev-screenshots") {
-		issueCapture.screenshotFolder = "dev-tools/dev-screenshots";
+function lastSegment(value: unknown): string | null {
+	if (typeof value !== "string" || !value) return null;
+	const parts = value.split("/").filter(Boolean);
+	return parts[parts.length - 1] ?? null;
+}
+
+function folderOf(value: unknown): string | null {
+	// "dev-tools/dev-logs/reloader-log.md" -> "dev-logs" (the containing folder).
+	if (typeof value !== "string" || !value) return null;
+	const parts = value.split("/").filter(Boolean);
+	return parts.length >= 2 ? (parts[parts.length - 2] ?? null) : null;
+}
+
+// Migrates older settings shapes to the current one. v3 splits the per-tool full
+// output paths into a shared storage root plus per-tool subfolder names. Derives
+// subfolders from any existing path so a customised folder name is preserved;
+// the data files themselves are not moved.
+function migrate(data: ToolboxData): void {
+	const issueCapture = data.tools["issue-capture"];
+	if (issueCapture) {
+		if (issueCapture.screenshotSubfolder === undefined) {
+			issueCapture.screenshotSubfolder =
+				lastSegment(issueCapture.screenshotFolder) ?? "dev-screenshots";
+		}
+		if (issueCapture.issueSubfolder === undefined) {
+			issueCapture.issueSubfolder = lastSegment(issueCapture.issueFolder) ?? "dev-issues";
+		}
+		delete issueCapture.screenshotFolder;
+		delete issueCapture.issueFolder;
 	}
-	const reloader = tools["reloader"];
-	if (reloader && reloader.logPath === "developer-toolbox-reloader-log.md") {
-		reloader.logPath = "dev-tools/dev-logs/reloader-log.md";
+	const reloader = data.tools["reloader"];
+	if (reloader) {
+		if (reloader.logSubfolder === undefined) {
+			reloader.logSubfolder = folderOf(reloader.logPath) ?? "dev-logs";
+		}
+		delete reloader.logPath;
 	}
 }
 
 export async function loadSettings(plugin: DeveloperToolboxPlugin): Promise<ToolboxData> {
 	const raw = (await plugin.loadData()) as Partial<ToolboxData> | null;
 	if (!raw) return structuredClone(DEFAULT_DATA);
-	const tools = { ...(raw.tools ?? {}) };
-	if (raw.version !== DATA_VERSION) {
-		migrateToDevTools(tools);
-	}
-	return {
+	const data: ToolboxData = {
 		version: DATA_VERSION,
-		tools,
+		storageRoot:
+			typeof raw.storageRoot === "string" && raw.storageRoot
+				? raw.storageRoot
+				: DEFAULT_STORAGE_ROOT,
+		tools: { ...(raw.tools ?? {}) },
 	};
+	if (raw.version !== DATA_VERSION) {
+		migrate(data);
+	}
+	return data;
 }
 
 export async function saveSettings(plugin: DeveloperToolboxPlugin): Promise<void> {
@@ -60,11 +93,26 @@ export class ToolboxSettingTab extends PluginSettingTab {
 		const { containerEl } = this;
 		containerEl.empty();
 
+		this.renderStorageSetting(containerEl);
+
 		for (const tool of this.plugin.tools) {
 			this.renderToolSection(containerEl, tool);
 		}
 
 		this.renderFooter(containerEl);
+	}
+
+	private renderStorageSetting(parent: HTMLElement): void {
+		new Setting(parent)
+			.setName("Storage folder")
+			.setDesc("Root folder for all tool output. Each tool saves into a subfolder of this. Changing it takes effect for new output; reopen this tab to refresh the subfolder paths shown below.")
+			.addText((t) => {
+				t.setValue(this.plugin.data.storageRoot);
+				t.onChange(async (value) => {
+					this.plugin.data.storageRoot = value.trim() || "_dev-tools";
+					await saveSettings(this.plugin);
+				});
+			});
 	}
 
 	private renderFooter(parent: HTMLElement): void {

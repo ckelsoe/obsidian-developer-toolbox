@@ -1,4 +1,4 @@
-import { App, ButtonComponent, DropdownComponent, Modal, Notice, Setting, TextAreaComponent, normalizePath, setIcon } from "obsidian";
+import { App, ButtonComponent, DropdownComponent, Modal, Notice, Setting, TextAreaComponent, setIcon } from "obsidian";
 import type { ToolboxLib, CapturedContext } from "../../lib/types";
 import type DeveloperToolboxPlugin from "../../main";
 import { AnnotationStage } from "./annotation/stage";
@@ -262,7 +262,7 @@ export class IssueDialog extends Modal {
 	private async ensureScreenshotSaved(): Promise<string | null> {
 		if (!this.capturedImage) return null;
 		if (this.savedImagePath) return this.savedImagePath;
-		const folder = normalizePath(this.settings.screenshotFolder);
+		const folder = this.lib.storage.resolve(this.settings.screenshotSubfolder);
 		await this.lib.vaultPaths.ensureFolder(folder);
 		const stamp = formatTimestamp(this.capturedImage.capturedAt);
 		const targetRel = `${folder}/${stamp}.png`;
@@ -308,7 +308,7 @@ export class IssueDialog extends Modal {
 	}
 
 	private async saveIssueFile(screenshotPath: string | null): Promise<string> {
-		const folder = normalizePath(this.settings.issueFolder);
+		const folder = this.lib.storage.resolve(this.settings.issueSubfolder);
 		await this.lib.vaultPaths.ensureFolder(folder);
 		const when = this.capturedImage?.capturedAt ?? Date.now();
 		const stamp = formatTimestamp(when);

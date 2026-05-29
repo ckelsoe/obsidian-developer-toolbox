@@ -1,6 +1,7 @@
 import { Setting } from "obsidian";
 import type { ToolContext } from "../types";
 import type { ReloaderSettings } from "./types";
+import { RELOADER_LOG_FILENAME } from "./types";
 import { saveSettings } from "../../settings";
 import { PluginPickerModal } from "./picker";
 import { restartActiveWatcher } from "./controller";
@@ -55,19 +56,20 @@ export function renderReloaderSettings(container: HTMLElement, ctx: Ctx): void {
 		});
 
 	new Setting(container)
-		.setName("Log file path")
-		.setDesc("Vault-relative path for the event log.")
+		.setName("Log subfolder")
+		.setDesc(`Saved inside the storage folder: ${ctx.plugin.data.storageRoot}/ (file: ${RELOADER_LOG_FILENAME})`)
 		.addText((t) => {
-			t.setValue(ctx.settings.logPath);
+			t.setValue(ctx.settings.logSubfolder);
 			t.inputEl.addClass("toolbox-reloader-log-input");
 			t.onChange(async (value) => {
-				ctx.settings.logPath = value.trim() || "dev-tools/dev-logs/reloader-log.md";
+				ctx.settings.logSubfolder = value.trim() || "dev-logs";
 				await saveSettings(ctx.plugin);
 			});
 		})
 		.addButton((btn) => {
 			btn.setButtonText("Open").onClick(() => {
-				void ctx.app.workspace.openLinkText(ctx.settings.logPath, "");
+				const path = ctx.lib.storage.resolve(`${ctx.settings.logSubfolder}/${RELOADER_LOG_FILENAME}`);
+				void ctx.app.workspace.openLinkText(path, "");
 			});
 		});
 

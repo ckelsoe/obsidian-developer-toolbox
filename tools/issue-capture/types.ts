@@ -1,8 +1,9 @@
-export type IssueType = "defect" | "enhancement" | "question" | "task" | "note";
+export type IssueType = "defect" | "enhancement" | "feedback" | "question" | "task" | "note";
 
 export const ISSUE_TYPES: readonly { id: IssueType; label: string }[] = [
 	{ id: "defect", label: "Defect" },
 	{ id: "enhancement", label: "Enhancement" },
+	{ id: "feedback", label: "Feedback" },
 	{ id: "question", label: "Question" },
 	{ id: "task", label: "Task" },
 	{ id: "note", label: "Note" },
@@ -10,11 +11,12 @@ export const ISSUE_TYPES: readonly { id: IssueType; label: string }[] = [
 
 export interface IssueCaptureSettings {
 	enabled: boolean;
+	immediateSettleMs: number;
 	delayedCaptureSeconds: number;
 	defaultIssueType: IssueType;
-	screenshotFolder: string;
+	screenshotSubfolder: string;
 	saveIssueFile: boolean;
-	issueFolder: string;
+	issueSubfolder: string;
 	redactHomePath: boolean;
 	includePluginList: boolean;
 	includeVaultName: boolean;
@@ -23,11 +25,12 @@ export interface IssueCaptureSettings {
 
 export const DEFAULT_ISSUE_CAPTURE_SETTINGS: IssueCaptureSettings = {
 	enabled: true,
-	delayedCaptureSeconds: 3,
+	immediateSettleMs: 300,
+	delayedCaptureSeconds: 5,
 	defaultIssueType: "defect",
-	screenshotFolder: "dev-tools/dev-screenshots",
+	screenshotSubfolder: "dev-screenshots",
 	saveIssueFile: true,
-	issueFolder: "dev-tools/dev-issues",
+	issueSubfolder: "dev-issues",
 	redactHomePath: true,
 	includePluginList: true,
 	includeVaultName: true,

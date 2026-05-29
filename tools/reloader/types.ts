@@ -13,7 +13,8 @@ export interface ReloaderSettings {
 	// Append every watcher and reload event to a timestamped markdown file.
 	// Opt-in: useful for verifying the watcher fires and spotting phantom events.
 	writeLog: boolean;
-	logPath: string;
+	// Subfolder of the storage root for the log. File name is fixed.
+	logSubfolder: string;
 }
 
 export const DEFAULT_RELOADER_SETTINGS: ReloaderSettings = {
@@ -23,5 +24,7 @@ export const DEFAULT_RELOADER_SETTINGS: ReloaderSettings = {
 	watchDebounceMs: 250,
 	showDiagnostics: true,
 	writeLog: false,
-	logPath: "dev-tools/dev-logs/reloader-log.md",
+	logSubfolder: "dev-logs",
 };
+
+export const RELOADER_LOG_FILENAME = "reloader-log.md";

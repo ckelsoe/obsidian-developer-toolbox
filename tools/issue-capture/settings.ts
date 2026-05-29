@@ -7,17 +7,31 @@ type Ctx = ToolContext<IssueCaptureSettings>;
 
 export function renderIssueCaptureSettings(container: HTMLElement, ctx: Ctx): void {
 	new Setting(container)
+		.setName("Immediate settle")
+		.setDesc("Brief pause before an immediate screenshot fires, so the triggering click and its highlight clear. In milliseconds.")
+		.addSlider((slider) => {
+			slider
+				.setLimits(0, 500, 50)
+				.setValue(ctx.settings.immediateSettleMs)
+				.setDynamicTooltip()
+				.onChange(async (value) => {
+					ctx.settings.immediateSettleMs = value;
+					await saveSettings(ctx.plugin);
+				});
+		});
+
+	new Setting(container)
 		.setName("Delayed countdown")
-		.setDesc("Seconds to wait before the screenshot fires when you use the delayed command. Gives you time to open a transient UI (menu, tooltip, palette).")
-		.addDropdown((dd) => {
-			for (const sec of [1, 2, 3, 4, 5, 7, 10]) {
-				dd.addOption(String(sec), `${sec} seconds`);
-			}
-			dd.setValue(String(ctx.settings.delayedCaptureSeconds));
-			dd.onChange(async (value) => {
-				ctx.settings.delayedCaptureSeconds = Number(value);
-				await saveSettings(ctx.plugin);
-			});
+		.setDesc("Seconds to wait before a delayed screenshot fires. Gives you time to navigate or open a transient UI (menu, tooltip, palette).")
+		.addSlider((slider) => {
+			slider
+				.setLimits(2, 15, 1)
+				.setValue(ctx.settings.delayedCaptureSeconds)
+				.setDynamicTooltip()
+				.onChange(async (value) => {
+					ctx.settings.delayedCaptureSeconds = value;
+					await saveSettings(ctx.plugin);
+				});
 		});
 
 	new Setting(container)
@@ -31,14 +45,16 @@ export function renderIssueCaptureSettings(container: HTMLElement, ctx: Ctx): vo
 			});
 		});
 
+	const storageRoot = ctx.plugin.data.storageRoot;
+
 	new Setting(container)
-		.setName("Screenshot folder")
-		.setDesc("Vault-relative folder where captured screenshots are saved.")
+		.setName("Screenshots subfolder")
+		.setDesc(`Saved inside the storage folder: ${storageRoot}/`)
 		.addText((t) => {
-			t.setValue(ctx.settings.screenshotFolder);
+			t.setValue(ctx.settings.screenshotSubfolder);
 			t.inputEl.addClass("toolbox-issue-folder-input");
 			t.onChange(async (value) => {
-				ctx.settings.screenshotFolder = value.trim() || "dev-tools/dev-screenshots";
+				ctx.settings.screenshotSubfolder = value.trim() || "dev-screenshots";
 				await saveSettings(ctx.plugin);
 			});
 		});
@@ -54,13 +70,13 @@ export function renderIssueCaptureSettings(container: HTMLElement, ctx: Ctx): vo
 		});
 
 	new Setting(container)
-		.setName("Issue folder")
-		.setDesc("Vault-relative folder where issue notes are saved.")
+		.setName("Issues subfolder")
+		.setDesc(`Saved inside the storage folder: ${storageRoot}/`)
 		.addText((t) => {
-			t.setValue(ctx.settings.issueFolder);
+			t.setValue(ctx.settings.issueSubfolder);
 			t.inputEl.addClass("toolbox-issue-folder-input");
 			t.onChange(async (value) => {
-				ctx.settings.issueFolder = value.trim() || "dev-tools/dev-issues";
+				ctx.settings.issueSubfolder = value.trim() || "dev-issues";
 				await saveSettings(ctx.plugin);
 			});
 		});

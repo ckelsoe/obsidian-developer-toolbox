@@ -20,11 +20,24 @@ async function nextFrame(): Promise<void> {
 	await new Promise<void>((resolve) => window.requestAnimationFrame(() => resolve()));
 }
 
+async function sleep(ms: number): Promise<void> {
+	await new Promise<void>((resolve) => window.setTimeout(resolve, ms));
+}
+
 export async function capture(opts: CaptureOpts, lib: ToolboxLib): Promise<CapturedImage> {
-	const delaySec = opts.delayMs ? Math.max(0, Math.round(opts.delayMs / 1000)) : 0;
-	if (delaySec > 0) {
-		await awaitCountdown(delaySec, lib);
+	const delayMs = opts.delayMs ?? 0;
+	if (delayMs >= 1000) {
+		// Long delay: show the countdown so the user can navigate or open a menu.
+		await awaitCountdown(Math.round(delayMs / 1000), lib);
+	} else if (delayMs > 0) {
+		// Short settle: a brief beat with no countdown UI, just long enough to let
+		// the triggering click settle before the frame is grabbed.
+		await sleep(delayMs);
 	}
+
+	// Drop focus from the ribbon icon (or whatever triggered capture) so its
+	// focus highlight is not baked into the screenshot.
+	(activeDocument.activeElement as HTMLElement | null)?.blur?.();
 
 	const userHidden: HTMLElement[] = [];
 	for (const el of opts.hideElements ?? []) {
