@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-05-29
+
+### Added
+- Annotation editing (issue capture): a new Select tool puts the stage into edit mode where you click an annotation to move, resize, or rotate it with handles. Shift-click (or ctrl/cmd-click) selects multiple objects to move, recolor, or delete as a group. Changing color or stroke width with objects selected applies to the selection. A Delete action removes the selected objects.
+- Blackout redactions are locked on placement: they cannot be selected, moved, resized, or deleted until you flip the Unlock blackouts toggle in the annotation toolbar, so a redaction cannot be slid off the thing it hides by accident.
+- Highlight tool: drag a semi-transparent marker fill over the screenshot. Overlapping strokes blend like a real highlighter.
+- Re-edit committed text: double-click any text annotation to change its wording. Clearing the text removes the object.
+- Annotation drafts: closing the capture without copying now keeps the screenshot and your editable annotations. The new "Resume annotation draft" command reopens the modal with every object still editable instead of a flattened image. The draft is cleared once you copy. A settings toggle controls whether drafts are kept (on by default).
+
 ## [0.5.0] - 2026-05-29
 
 ### Added

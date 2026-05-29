@@ -81,6 +81,17 @@ export function renderIssueCaptureSettings(container: HTMLElement, ctx: Ctx): vo
 			});
 		});
 
+	new Setting(container)
+		.setName("Save annotation drafts")
+		.setDesc("When you close the capture without copying, keep the screenshot and your editable annotations so you can resume later from the command palette. Cleared once you copy.")
+		.addToggle((toggle) => {
+			toggle.setValue(ctx.settings.saveAnnotationDraft).onChange(async (value) => {
+				ctx.settings.saveAnnotationDraft = value;
+				if (!value) ctx.settings.annotationDraft = null;
+				await saveSettings(ctx.plugin);
+			});
+		});
+
 	new Setting(container).setName("Privacy").setHeading();
 
 	new Setting(container)

@@ -233,6 +233,19 @@
 	max-width: 100%;
 }
 
+.toolbox-annotation-stage.is-select-mode {
+	cursor: default;
+}
+
+.toolbox-annotation-action.is-disabled {
+	opacity: 0.4;
+	cursor: default;
+}
+
+.toolbox-annotation-action.is-disabled:hover {
+	background: transparent;
+}
+
 .toolbox-annotation-text-editor {
 	position: absolute;
 	min-width: 120px;

@@ -2,17 +2,21 @@ import { App, ButtonComponent, DropdownComponent, Modal, Notice, Setting, TextAr
 import type { ToolboxLib, CapturedContext } from "../../lib/types";
 import type DeveloperToolboxPlugin from "../../main";
 import { AnnotationStage } from "./annotation/stage";
-import type { AnnotationKind } from "./annotation/types";
+import type { SerializedAnnotations, ToolMode } from "./annotation/types";
 import { PALETTE, STROKE_WIDTHS } from "./annotation/types";
 import type { CapturedImage } from "./capture";
 import { buildPayload, buildIssueDocument } from "./payload";
-import { ISSUE_TYPES, type IssueCaptureSettings, type IssueType } from "./types";
+import { saveSettings } from "../../settings";
+import { ISSUE_TYPES, type AnnotationDraft, type IssueCaptureSettings, type IssueType } from "./types";
 
 interface IssueDialogOpts {
 	capturedImage: CapturedImage | null;
 	prefilledContext: CapturedContext;
 	settings: IssueCaptureSettings;
 	lib: ToolboxLib;
+	// D3: when resuming a draft, the editable annotation model to restore on top
+	// of the draft's screenshot.
+	restore?: SerializedAnnotations | null;
 }
 
 export class IssueDialog extends Modal {
@@ -28,6 +32,15 @@ export class IssueDialog extends Modal {
 	private payloadTextarea: TextAreaComponent | null = null;
 	private savedImagePath: string | null = null;
 	private annotationStage: AnnotationStage | null = null;
+	private restoreState: SerializedAnnotations | null;
+	private deleteBtn: HTMLButtonElement | null = null;
+	// Original (unflattened) screenshot as a data URL, captured once the image
+	// loads. Persisted in a draft so reopening restores editable objects, not a
+	// baked PNG.
+	private sourceImageDataUrl: string | null = null;
+	// Set once the payload is copied so the draft is cleared rather than re-saved
+	// on close.
+	private copied = false;
 
 	constructor(app: App, plugin: DeveloperToolboxPlugin, opts: IssueDialogOpts) {
 		super(app);
@@ -36,6 +49,7 @@ export class IssueDialog extends Modal {
 		this.context = opts.prefilledContext;
 		this.settings = opts.settings;
 		this.lib = opts.lib;
+		this.restoreState = opts.restore ?? null;
 		this.issueType = opts.settings.defaultIssueType;
 	}
 
@@ -58,9 +72,38 @@ export class IssueDialog extends Modal {
 	}
 
 	onClose(): void {
+		// Snapshot the draft before tearing the stage down (serialize needs it).
+		const draft = this.copied ? null : this.captureDraftSnapshot();
 		this.annotationStage?.destroy();
 		this.annotationStage = null;
 		this.contentEl.empty();
+		void this.persistDraft(draft);
+	}
+
+	// D3: a sync snapshot of the editable state, or null when there is nothing
+	// worth keeping (drafts off, no annotations, or the source not yet encoded).
+	private captureDraftSnapshot(): AnnotationDraft | null {
+		if (!this.settings.saveAnnotationDraft) return null;
+		const stage = this.annotationStage;
+		if (!stage || stage.isEmpty()) return null;
+		if (!this.sourceImageDataUrl || !this.capturedImage) return null;
+		return {
+			imageDataUrl: this.sourceImageDataUrl,
+			capturedAt: this.capturedImage.capturedAt,
+			serialized: stage.serialize(),
+		};
+	}
+
+	private async persistDraft(draft: AnnotationDraft | null): Promise<void> {
+		const current = this.settings.annotationDraft ?? null;
+		if (current === null && draft === null) return;
+		this.settings.annotationDraft = draft;
+		await saveSettings(this.toolboxPlugin);
+	}
+
+	private async captureSourceDataUrl(): Promise<void> {
+		if (!this.capturedImage) return;
+		this.sourceImageDataUrl = await blobToDataUrl(this.capturedImage.pngBlob);
 	}
 
 	private renderScreenshotPreview(parent: HTMLElement): void {
@@ -76,8 +119,11 @@ export class IssueDialog extends Modal {
 		const url = URL.createObjectURL(this.capturedImage!.pngBlob);
 		img.onload = (): void => {
 			URL.revokeObjectURL(url);
-			this.annotationStage = new AnnotationStage(canvasHolder, img);
+			this.annotationStage = new AnnotationStage(canvasHolder, img, this.restoreState ?? undefined);
+			this.annotationStage.onSelectionChange(() => this.refreshDeleteButton());
 			this.renderAnnotationToolbar(toolbar);
+			// Snapshot the unflattened source for draft persistence (D3).
+			void this.captureSourceDataUrl();
 		};
 		img.src = url;
 	}
@@ -85,10 +131,12 @@ export class IssueDialog extends Modal {
 	private renderAnnotationToolbar(parent: HTMLElement): void {
 		parent.empty();
 
-		const tools: { id: AnnotationKind; icon: string; label: string }[] = [
+		const tools: { id: ToolMode; icon: string; label: string }[] = [
+			{ id: "select", icon: "mouse-pointer-2", label: "Select (move, resize, rotate)" },
 			{ id: "pen", icon: "pencil", label: "Pen" },
 			{ id: "box", icon: "square", label: "Box" },
 			{ id: "arrow", icon: "arrow-up-right", label: "Arrow" },
+			{ id: "highlight", icon: "highlighter", label: "Highlight" },
 			{ id: "text", icon: "type", label: "Text" },
 			{ id: "blackout", icon: "eye-off", label: "Blackout (PII)" },
 		];
@@ -128,6 +176,33 @@ export class IssueDialog extends Modal {
 		}
 
 		const actions = parent.createDiv({ cls: "toolbox-annotation-actions" });
+
+		const lockBtn = actions.createEl("button", { cls: "toolbox-annotation-action", attr: { "aria-label": "Unlock blackouts to move them", type: "button" } });
+		const paintLock = (): void => {
+			const unlocked = this.annotationStage?.isBlackoutsUnlocked() ?? false;
+			lockBtn.empty();
+			setIcon(lockBtn, unlocked ? "lock-open" : "lock");
+			lockBtn.toggleClass("is-active", unlocked);
+			lockBtn.setAttribute("aria-label", unlocked ? "Lock blackouts" : "Unlock blackouts to move them");
+		};
+		paintLock();
+		lockBtn.addEventListener("click", () => {
+			const stage = this.annotationStage;
+			if (!stage) return;
+			stage.setBlackoutsUnlocked(!stage.isBlackoutsUnlocked());
+			paintLock();
+			this.refreshToolbarActive(parent);
+		});
+
+		const deleteBtn = actions.createEl("button", { cls: "toolbox-annotation-action", attr: { "aria-label": "Delete selection", type: "button" } });
+		setIcon(deleteBtn, "eraser");
+		deleteBtn.addEventListener("click", () => {
+			this.annotationStage?.deleteSelected();
+			this.refreshToolbarActive(parent);
+		});
+		this.deleteBtn = deleteBtn;
+		this.refreshDeleteButton();
+
 		const undoBtn = actions.createEl("button", { cls: "toolbox-annotation-action", attr: { "aria-label": "Undo", type: "button" } });
 		setIcon(undoBtn, "undo-2");
 		undoBtn.addEventListener("click", () => {
@@ -168,6 +243,14 @@ export class IssueDialog extends Modal {
 		toolbar.querySelectorAll<HTMLElement>(".toolbox-annotation-width").forEach((btn) => {
 			btn.toggleClass("is-active", btn.dataset.width === activeWidthId);
 		});
+		this.refreshDeleteButton();
+	}
+
+	private refreshDeleteButton(): void {
+		if (!this.deleteBtn) return;
+		const enabled = this.annotationStage?.hasSelection() ?? false;
+		this.deleteBtn.toggleClass("is-disabled", !enabled);
+		this.deleteBtn.disabled = !enabled;
 	}
 
 	private renderTypeRow(parent: HTMLElement): void {
@@ -301,6 +384,7 @@ export class IssueDialog extends Modal {
 					: "Copied issue payload to clipboard.",
 				2500,
 			);
+			this.copied = true;
 			this.close();
 		} catch (e) {
 			new Notice("Copy failed: " + (e as Error).message, 6000);
@@ -331,11 +415,21 @@ export class IssueDialog extends Modal {
 			if (!savedPath) return;
 			await this.lib.clipboard.writeText(savedPath);
 			new Notice(`Copied path: ${savedPath}`, 2000);
+			this.copied = true;
 			this.close();
 		} catch (e) {
 			new Notice("Copy failed: " + (e as Error).message, 6000);
 		}
 	}
+}
+
+function blobToDataUrl(blob: Blob): Promise<string> {
+	return new Promise((resolve, reject) => {
+		const reader = new FileReader();
+		reader.onload = (): void => resolve(reader.result as string);
+		reader.onerror = (): void => reject(reader.error ?? new Error("Failed to read image."));
+		reader.readAsDataURL(blob);
+	});
 }
 
 function formatTimestamp(epoch: number): string {
