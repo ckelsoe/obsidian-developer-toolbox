@@ -9,6 +9,7 @@ import reloader from "./tools/reloader";
 import stateInspector from "./tools/state-inspector";
 import iconBrowser from "./tools/icon-browser";
 import cssVarInspector from "./tools/css-var-inspector";
+import commandInspector from "./tools/command-inspector";
 
 const TOOLS: ToolHandle[] = [
 	issueCapture,
@@ -16,6 +17,7 @@ const TOOLS: ToolHandle[] = [
 	stateInspector,
 	iconBrowser,
 	cssVarInspector,
+	commandInspector,
 ];
 
 export default class DeveloperToolboxPlugin extends Plugin {

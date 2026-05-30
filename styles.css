@@ -179,6 +179,57 @@
 	word-break: break-all;
 }
 
+.toolbox-cmd-search {
+	width: 100%;
+	margin-bottom: 8px;
+}
+
+.toolbox-cmd-count {
+	font-size: var(--font-ui-small);
+	color: var(--text-muted);
+	margin-bottom: 8px;
+}
+
+.toolbox-cmd-list {
+	max-height: 50vh;
+	overflow-y: auto;
+}
+
+.toolbox-cmd-row {
+	display: flex;
+	gap: 12px;
+	align-items: baseline;
+	padding: 4px 6px;
+	border-radius: 4px;
+	cursor: pointer;
+	font-size: var(--font-ui-small);
+}
+
+.toolbox-cmd-row:hover {
+	background: var(--background-modifier-hover);
+}
+
+.toolbox-cmd-id {
+	color: var(--text-accent);
+	font-family: var(--font-monospace);
+	flex: 1 1 45%;
+	word-break: break-all;
+}
+
+.toolbox-cmd-plugin {
+	color: var(--text-muted);
+	flex: 0 0 25%;
+	word-break: break-word;
+}
+
+.toolbox-cmd-hotkey {
+	color: var(--text-muted);
+	font-family: var(--font-monospace);
+	flex: 0 0 25%;
+	text-align: right;
+	word-break: break-all;
+}
+
 .toolbox-issue-context-list > div {
 	font-size: var(--font-ui-small);
 	color: var(--text-muted);
