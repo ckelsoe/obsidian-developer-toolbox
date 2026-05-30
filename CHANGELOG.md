@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Icon browser: a new tool that lists and previews every icon ID usable in `setIcon` and `addRibbonIcon`. Open it from the ribbon (`palette` icon) or the "Browse icons" command, search by ID, and click any icon to copy its ID string to the clipboard. The list is read live from Obsidian, so it reflects the icons actually registered in your install.
+- CSS variable inspector: a new tool that lists every CSS custom property (`--name`) the app and active theme define, each with its live computed value for the current light or dark scheme. Open it from the ribbon (`paintbrush` icon) or the "Inspect CSS variables" command, search by name or value, and click any row to copy a paste-ready `--name: value;` declaration. A "Copy all" action copies the whole filtered list. Values are read live via the CSSOM, so they track the active theme.
+- Command inspector: a new tool that lists every registered command with its owning plugin and effective hotkey. Open it from the ribbon (`terminal` icon) or the "Inspect commands" command, search by command ID, plugin, or hotkey, and click any row to copy the command ID. The hotkey shown is the binding actually in effect (a user override beats the app default, which beats the plugin-declared default), and "Copy all" exports the filtered list as tab-separated rows. Commands and hotkeys are read live from Obsidian's internal registries, so the table degrades gracefully if a future build changes their shape.
 
 ## [0.7.0] - 2026-05-29
 

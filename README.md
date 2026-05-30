@@ -2,7 +2,7 @@
 
 [![CI](https://img.shields.io/github/actions/workflow/status/ckelsoe/obsidian-developer-toolbox/ci.yml?branch=main&label=CI&logo=github)](https://github.com/ckelsoe/obsidian-developer-toolbox/actions/workflows/ci.yml) [![Release](https://img.shields.io/github/actions/workflow/status/ckelsoe/obsidian-developer-toolbox/release.yml?label=Release&logo=github)](https://github.com/ckelsoe/obsidian-developer-toolbox/actions/workflows/release.yml) [![GitHub Downloads](https://img.shields.io/github/downloads/ckelsoe/obsidian-developer-toolbox/total?logo=github&label=Downloads)](https://github.com/ckelsoe/obsidian-developer-toolbox/releases) [![GitHub Stars](https://img.shields.io/github/stars/ckelsoe/obsidian-developer-toolbox?style=flat&logo=github&label=Stars)](https://github.com/ckelsoe/obsidian-developer-toolbox) [![Obsidian](https://img.shields.io/badge/Obsidian-v1.5.7%2B-7C3AED?logo=obsidian&logoColor=white)](https://obsidian.md) [![License](https://img.shields.io/github/license/ckelsoe/obsidian-developer-toolbox)](https://github.com/ckelsoe/obsidian-developer-toolbox/blob/main/LICENSE) [![Latest Release](https://img.shields.io/github/v/release/ckelsoe/obsidian-developer-toolbox?label=Latest)](https://github.com/ckelsoe/obsidian-developer-toolbox/releases/latest)
 
-A toolbox of developer-focused tools for Obsidian: capture annotated screenshots with structured issue context, and reload plugins live while you develop.
+A toolbox of developer-focused tools for Obsidian: capture annotated screenshots with structured issue context, reload plugins live while you develop, browse icon IDs, and inspect CSS variables and registered commands.
 
 ## Tools
 
@@ -25,6 +25,30 @@ Reload a plugin without restarting Obsidian, so a fresh build takes effect immed
 - Reload any installed plugin from a searchable picker, or configure a set of dev plugins to reload together.
 - Optional auto-reload: watch your dev plugins' build output and reload automatically when it changes.
 - A status bar indicator shows the running version and the time of the last reload, and turns amber when a watched change is pending. Click it to reload.
+
+### Icon browser
+
+Browse and preview every icon ID available to Obsidian's `setIcon` and `addRibbonIcon`, so you can find the right glyph without guessing at names.
+
+- Open from the ribbon (`palette` icon) or the "Browse icons" command.
+- Search by icon ID and click any icon to copy its ID string to the clipboard.
+- The grid is read live from Obsidian, so it reflects the icons actually registered in your install.
+
+### CSS variable inspector
+
+Inspect the CSS custom properties the app and your active theme define, each with its live computed value, so you can style and theme against the real variables.
+
+- Open from the ribbon (`paintbrush` icon) or the "Inspect CSS variables" command.
+- Search by variable name or value, and click any row to copy a paste-ready `--name: value;` declaration. "Copy all" copies the whole filtered list.
+- Values resolve for the current light or dark scheme and are read live via the CSSOM, so they track theme changes.
+
+### Command inspector
+
+List every registered command with its owning plugin and the hotkey actually bound to it, so you can find command IDs and spot binding conflicts.
+
+- Open from the ribbon (`terminal` icon) or the "Inspect commands" command.
+- Search by command ID, plugin, or hotkey, and click any row to copy the command ID. "Copy all" exports the filtered list as tab-separated rows.
+- The hotkey shown is the effective binding (a user override beats the app default, which beats the plugin's declared default). Commands and hotkeys are read live from Obsidian's internal registries.
 
 ## Installation
 
