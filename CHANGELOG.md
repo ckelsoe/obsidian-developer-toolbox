@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Icon browser: a new tool that lists and previews every icon ID usable in `setIcon` and `addRibbonIcon`. Open it from the ribbon (`palette` icon) or the "Browse icons" command, search by ID, and click any icon to copy its ID string to the clipboard. The list is read live from Obsidian, so it reflects the icons actually registered in your install.
+
 ## [0.7.0] - 2026-05-29
 
 ### Added
