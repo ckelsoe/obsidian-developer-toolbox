@@ -46,7 +46,7 @@ Inspect the CSS custom properties the app and your active theme define, each wit
 
 List every registered command with its owning plugin and the hotkey actually bound to it, so you can find command IDs and spot binding conflicts.
 
-- Open from the ribbon (`terminal` icon) or the "Inspect commands" command.
+- Open from the ribbon (`terminal` icon) or the "Inspect hotkeys and ids" command.
 - Search by command ID, plugin, or hotkey, and click any row to copy the command ID. "Copy all" exports the filtered list as tab-separated rows.
 - The hotkey shown is the effective binding (a user override beats the app default, which beats the plugin's declared default). Commands and hotkeys are read live from Obsidian's internal registries.
 

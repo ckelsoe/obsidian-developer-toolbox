@@ -1,7 +1,10 @@
 /* Developer Toolbox styles. Per-tool styles are appended in subsequent commits. */
 
-.toolbox-hidden {
-	display: none !important;
+/* Hide via higher specificity rather than forcing the override: the countdown
+   notice sets display: flex below, so the hide rule must outrank a single-class
+   selector. */
+.toolbox-countdown-notice.toolbox-hidden {
+	display: none;
 }
 
 .toolbox-countdown-notice {

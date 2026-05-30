@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.1] - 2026-05-30
+
+### Fixed
+- Removed the word "Obsidian" from the manifest description, which the marketplace flags as redundant with the plugin directory context.
+- Replaced a `!important` hide rule with a higher-specificity selector, per the guideline to avoid `!important`.
+- Renamed the command inspector's command and ribbon action to "Inspect hotkeys and ids" so its command id and name no longer contain the word "command", per the command-naming guideline.
+
 ## [0.8.0] - 2026-05-30
 
 ### Added

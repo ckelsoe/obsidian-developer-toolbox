@@ -1,9 +1,9 @@
 {
 	"id": "developer-toolbox",
 	"name": "Developer Toolbox",
-	"version": "0.8.0",
+	"version": "0.8.1",
 	"minAppVersion": "1.5.7",
-	"description": "Developer tools for Obsidian: capture annotated screenshots with structured issue context, and reload plugins live while you develop.",
+	"description": "Developer tools to capture annotated screenshots with structured context, reload plugins live, and inspect icons, CSS variables, and commands.",
 	"author": "Charles Kelsoe",
 	"authorUrl": "https://github.com/ckelsoe",
 	"isDesktopOnly": true

@@ -14,15 +14,13 @@ const commandInspector: ToolHandle<CommandInspectorSettings> = {
 			new CommandInspectorModal(ctx.app, ctx.plugin, { lib: ctx.lib }).open();
 		};
 
-		const ribbon = ctx.plugin.addRibbonIcon("terminal", "Inspect commands", () => open());
+		const ribbon = ctx.plugin.addRibbonIcon("terminal", "Inspect hotkeys and ids", () => open());
 
-		/* eslint-disable obsidianmd/commands/no-command-in-command-id, obsidianmd/commands/no-command-in-command-name -- this tool inspects Obsidian's registered commands, so "commands" is the object of the action, not a redundant label */
 		ctx.plugin.addCommand({
-			id: "inspect-commands",
-			name: "Inspect commands",
+			id: "inspect-hotkeys-and-ids",
+			name: "Inspect hotkeys and ids",
 			callback: () => open(),
 		});
-		/* eslint-enable obsidianmd/commands/no-command-in-command-id, obsidianmd/commands/no-command-in-command-name */
 
 		return {
 			dispose: (): void => {
