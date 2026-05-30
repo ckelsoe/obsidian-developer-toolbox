@@ -1,25 +1,34 @@
-import { App, Modal, Notice, TextComponent, getIconIds, setIcon } from "obsidian";
+import { App, Modal, Notice, SearchComponent, getIconIds, setIcon } from "obsidian";
 import type { ToolboxLib } from "../../lib/types";
 import type DeveloperToolboxPlugin from "../../main";
+import { createVirtualList, type VirtualListController } from "../../lib/ui/virtual-list";
 import { filterIcons, sortIcons } from "./collect";
 
 interface IconBrowserOpts {
 	lib: ToolboxLib;
 }
 
-// Cap the number of rendered cells. getIconIds() returns ~1500+ ids and each
-// setIcon call builds an SVG, so rendering the whole set eagerly janks the first
-// paint. The user narrows past the cap with the search box; the count line says
-// when results are truncated.
-const DISPLAY_CAP = 300;
+// Fixed grid-row height for the virtual list (preview glyph plus a two-line
+// clamped id label). Each virtual row holds `columns` cells.
+const ROW_HEIGHT = 88;
+
+// Approximate cell footprint (min cell width plus gap). Columns is derived from
+// the container width divided by this, so the grid reflows as the modal resizes.
+const CELL_FOOTPRINT = 100;
 
 // Browse and copy Lucide / Obsidian icon ids usable in setIcon and addRibbonIcon.
 // getIconIds() and setIcon() are public module exports (obsidian.d.ts:3233, :5517).
+// The grid is virtualized as rows of `columns` cells, so the full ~1500-icon set
+// scrolls smoothly without a render cap.
 export class IconBrowserModal extends Modal {
 	private lib: ToolboxLib;
 	private allIds: string[];
-	private grid!: HTMLElement;
+	private listEl!: HTMLElement;
 	private countEl!: HTMLElement;
+	private matches: string[] = [];
+	private columns = 6;
+	private vlist: VirtualListController | null = null;
+	private resizeObserver: ResizeObserver | null = null;
 
 	constructor(app: App, _plugin: DeveloperToolboxPlugin, opts: IconBrowserOpts) {
 		super(app);
@@ -30,40 +39,77 @@ export class IconBrowserModal extends Modal {
 	}
 
 	onOpen(): void {
+		this.modalEl.addClass("toolbox-inspector-dialog");
 		this.titleEl.setText("Icon browser");
 
 		const { contentEl } = this;
 		contentEl.empty();
 
-		const search = new TextComponent(contentEl);
+		const search = new SearchComponent(contentEl);
 		search.setPlaceholder("Search icons by ID");
 		search.inputEl.addClass("toolbox-icon-search");
-		search.onChange((value) => this.renderGrid(value));
+		search.onChange((value) => this.renderList(value));
 
 		this.countEl = contentEl.createDiv({ cls: "toolbox-icon-count" });
-		this.grid = contentEl.createDiv({ cls: "toolbox-icon-grid" });
+		this.listEl = contentEl.createDiv({ cls: "toolbox-icon-grid" });
 
-		this.renderGrid("");
+		this.vlist = createVirtualList({
+			scrollEl: this.listEl,
+			rowHeight: ROW_HEIGHT,
+			renderRow: (index, rowEl) => this.renderRow(index, rowEl),
+		});
+
+		// Recompute columns and row count whenever the grid's width changes (modal
+		// resize, window resize). Observing also fires once with the initial size,
+		// which corrects the column count after first layout.
+		this.resizeObserver = new ResizeObserver(() => this.relayout());
+		this.resizeObserver.observe(this.listEl);
+
+		this.renderList("");
 	}
 
 	onClose(): void {
+		this.resizeObserver?.disconnect();
+		this.resizeObserver = null;
+		this.vlist?.destroy();
+		this.vlist = null;
 		this.contentEl.empty();
 	}
 
-	private renderGrid(query: string): void {
-		const matches = filterIcons(this.allIds, query);
-		const shown = matches.slice(0, DISPLAY_CAP);
+	private renderList(query: string): void {
+		this.matches = filterIcons(this.allIds, query);
+		this.countEl.setText(`${this.matches.length} icons`);
+		this.relayout();
+	}
 
-		this.countEl.setText(
-			shown.length < matches.length
-				? `Showing first ${shown.length} of ${matches.length} matches. Refine the search to narrow.`
-				: `${matches.length} icons`,
-		);
+	// Map the current match count onto grid rows for the active column count.
+	private relayout(): void {
+		this.columns = this.computeColumns();
+		const rowCount = Math.ceil(this.matches.length / this.columns);
+		this.vlist?.setRowCount(rowCount);
+	}
 
-		this.grid.empty();
-		const fragment = activeDocument.createDocumentFragment();
-		for (const id of shown) {
-			const cell = fragment.createDiv({
+	private computeColumns(): number {
+		const width = this.listEl?.clientWidth ?? 0;
+		// Before first layout the width is 0; keep the last known column count so
+		// the grid is not briefly single-column. The ResizeObserver corrects it.
+		if (width <= 0) return this.columns;
+		return Math.max(1, Math.floor(width / CELL_FOOTPRINT));
+	}
+
+	private renderRow(rowIndex: number, rowEl: HTMLElement): void {
+		rowEl.addClass("toolbox-icon-row");
+		const start = rowIndex * this.columns;
+		for (let c = 0; c < this.columns; c++) {
+			const idx = start + c;
+			if (idx >= this.matches.length) {
+				// Pad the trailing slots so the real cells keep their width.
+				rowEl.createDiv({ cls: "toolbox-icon-cell-spacer" });
+				continue;
+			}
+			const id = this.matches[idx];
+			if (id === undefined) continue;
+			const cell = rowEl.createDiv({
 				cls: "toolbox-icon-cell",
 				attr: { "aria-label": `Copy ${id}`, title: id },
 			});
@@ -72,7 +118,6 @@ export class IconBrowserModal extends Modal {
 			cell.createSpan({ cls: "toolbox-icon-label", text: id });
 			cell.addEventListener("click", () => void this.copyId(id));
 		}
-		this.grid.appendChild(fragment);
 	}
 
 	private async copyId(id: string): Promise<void> {

@@ -1,6 +1,7 @@
-import { App, ButtonComponent, Modal, Notice, TextComponent } from "obsidian";
+import { App, ButtonComponent, Modal, Notice, SearchComponent } from "obsidian";
 import type { ToolboxLib } from "../../lib/types";
 import type DeveloperToolboxPlugin from "../../main";
+import { createVirtualList, type VirtualListController } from "../../lib/ui/virtual-list";
 import { collectCssVars } from "./collect";
 import { filterCssVars, formatBlob, formatVarLine } from "./format";
 import type { CssVar } from "./types";
@@ -9,18 +10,21 @@ interface CssVarInspectorOpts {
 	lib: ToolboxLib;
 }
 
-// Cap rendered rows so a theme with hundreds of variables does not jank the first
-// paint. The search box narrows past the cap; the count line says when truncated.
-const DISPLAY_CAP = 400;
+// Fixed row height for the virtual list. Rows are single-line (name and value
+// both ellipsize), so a uniform height holds and the full set scrolls without a
+// cap.
+const ROW_HEIGHT = 30;
 
 // A searchable, copyable dump of every CSS custom property the active theme and
 // Obsidian define, with current computed values. Standard CSSOM, no Obsidian API.
+// The list is virtualized, so every matching variable is reachable by scrolling
+// rather than capped.
 export class CssVarInspectorModal extends Modal {
 	private lib: ToolboxLib;
 	private allVars: CssVar[];
-	private list!: HTMLElement;
 	private countEl!: HTMLElement;
 	private matches: CssVar[] = [];
+	private vlist: VirtualListController | null = null;
 
 	constructor(app: App, _plugin: DeveloperToolboxPlugin, opts: CssVarInspectorOpts) {
 		super(app);
@@ -30,52 +34,54 @@ export class CssVarInspectorModal extends Modal {
 	}
 
 	onOpen(): void {
+		this.modalEl.addClass("toolbox-inspector-dialog");
 		this.titleEl.setText("CSS variable inspector");
 
 		const { contentEl } = this;
 		contentEl.empty();
 
-		const search = new TextComponent(contentEl);
+		const search = new SearchComponent(contentEl);
 		search.setPlaceholder("Search variables by name or value");
 		search.inputEl.addClass("toolbox-cssvar-search");
 		search.onChange((value) => this.renderList(value));
 
 		this.countEl = contentEl.createDiv({ cls: "toolbox-cssvar-count" });
-		this.list = contentEl.createDiv({ cls: "toolbox-cssvar-list" });
+		const listEl = contentEl.createDiv({ cls: "toolbox-cssvar-list" });
+
+		this.vlist = createVirtualList({
+			scrollEl: listEl,
+			rowHeight: ROW_HEIGHT,
+			renderRow: (index, rowEl) => this.renderRow(index, rowEl),
+		});
 
 		this.renderButtons(contentEl);
 		this.renderList("");
 	}
 
 	onClose(): void {
+		this.vlist?.destroy();
+		this.vlist = null;
 		this.contentEl.empty();
 	}
 
 	private renderList(query: string): void {
 		this.matches = filterCssVars(this.allVars, query);
-		const shown = this.matches.slice(0, DISPLAY_CAP);
+		this.countEl.setText(`${this.matches.length} variables`);
+		this.vlist?.setRowCount(this.matches.length);
+	}
 
-		this.countEl.setText(
-			shown.length < this.matches.length
-				? `Showing first ${shown.length} of ${this.matches.length} matches. Refine the search to narrow.`
-				: `${this.matches.length} variables`,
-		);
-
-		this.list.empty();
-		const fragment = activeDocument.createDocumentFragment();
-		for (const v of shown) {
-			const row = fragment.createDiv({
-				cls: "toolbox-cssvar-row",
-				attr: { "aria-label": `Copy ${v.name}`, title: formatVarLine(v) },
-			});
-			row.createSpan({ cls: "toolbox-cssvar-name", text: v.name });
-			row.createSpan({
-				cls: "toolbox-cssvar-value",
-				text: v.value || "(unset in current theme)",
-			});
-			row.addEventListener("click", () => void this.copyLine(v));
-		}
-		this.list.appendChild(fragment);
+	private renderRow(index: number, rowEl: HTMLElement): void {
+		const v = this.matches[index];
+		if (!v) return;
+		rowEl.addClass("toolbox-cssvar-row");
+		rowEl.setAttribute("aria-label", `Copy ${v.name}`);
+		rowEl.setAttribute("title", formatVarLine(v));
+		rowEl.createSpan({ cls: "toolbox-cssvar-name", text: v.name });
+		rowEl.createSpan({
+			cls: "toolbox-cssvar-value",
+			text: v.value || "(unset in current theme)",
+		});
+		rowEl.addEventListener("click", () => void this.copyLine(v));
 	}
 
 	private renderButtons(parent: HTMLElement): void {
