@@ -136,6 +136,49 @@
 	line-height: 1.2;
 }
 
+.toolbox-cssvar-search {
+	width: 100%;
+	margin-bottom: 8px;
+}
+
+.toolbox-cssvar-count {
+	font-size: var(--font-ui-small);
+	color: var(--text-muted);
+	margin-bottom: 8px;
+}
+
+.toolbox-cssvar-list {
+	max-height: 50vh;
+	overflow-y: auto;
+}
+
+.toolbox-cssvar-row {
+	display: flex;
+	gap: 12px;
+	align-items: baseline;
+	padding: 4px 6px;
+	border-radius: 4px;
+	cursor: pointer;
+	font-family: var(--font-monospace);
+	font-size: var(--font-ui-small);
+}
+
+.toolbox-cssvar-row:hover {
+	background: var(--background-modifier-hover);
+}
+
+.toolbox-cssvar-name {
+	color: var(--text-accent);
+	flex: 0 0 40%;
+	word-break: break-all;
+}
+
+.toolbox-cssvar-value {
+	color: var(--text-muted);
+	flex: 1 1 60%;
+	word-break: break-all;
+}
+
 .toolbox-issue-context-list > div {
 	font-size: var(--font-ui-small);
 	color: var(--text-muted);

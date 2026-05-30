@@ -8,12 +8,14 @@ import issueCapture from "./tools/issue-capture";
 import reloader from "./tools/reloader";
 import stateInspector from "./tools/state-inspector";
 import iconBrowser from "./tools/icon-browser";
+import cssVarInspector from "./tools/css-var-inspector";
 
 const TOOLS: ToolHandle[] = [
 	issueCapture,
 	reloader,
 	stateInspector,
 	iconBrowser,
+	cssVarInspector,
 ];
 
 export default class DeveloperToolboxPlugin extends Plugin {
