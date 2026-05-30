@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-05-30
+
 ### Added
 - Icon browser: a new tool that lists and previews every icon ID usable in `setIcon` and `addRibbonIcon`. Open it from the ribbon (`palette` icon) or the "Browse icons" command, search by ID, and click any icon to copy its ID string to the clipboard. The list is read live from Obsidian, so it reflects the icons actually registered in your install.
 - CSS variable inspector: a new tool that lists every CSS custom property (`--name`) the app and active theme define, each with its live computed value for the current light or dark scheme. Open it from the ribbon (`paintbrush` icon) or the "Inspect CSS variables" command, search by name or value, and click any row to copy a paste-ready `--name: value;` declaration. A "Copy all" action copies the whole filtered list. Values are read live via the CSSOM, so they track the active theme.
