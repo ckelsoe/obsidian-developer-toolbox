@@ -11,6 +11,7 @@ import iconBrowser from "./tools/icon-browser";
 import cssVarInspector from "./tools/css-var-inspector";
 import commandInspector from "./tools/command-inspector";
 import diagnostics from "./tools/diagnostics";
+import eventSpy from "./tools/event-spy";
 
 const TOOLS: ToolHandle[] = [
 	issueCapture,
@@ -20,6 +21,7 @@ const TOOLS: ToolHandle[] = [
 	cssVarInspector,
 	commandInspector,
 	diagnostics,
+	eventSpy,
 ];
 
 export default class DeveloperToolboxPlugin extends Plugin {
