@@ -10,6 +10,7 @@ import stateInspector from "./tools/state-inspector";
 import iconBrowser from "./tools/icon-browser";
 import cssVarInspector from "./tools/css-var-inspector";
 import commandInspector from "./tools/command-inspector";
+import diagnostics from "./tools/diagnostics";
 
 const TOOLS: ToolHandle[] = [
 	issueCapture,
@@ -18,6 +19,7 @@ const TOOLS: ToolHandle[] = [
 	iconBrowser,
 	cssVarInspector,
 	commandInspector,
+	diagnostics,
 ];
 
 export default class DeveloperToolboxPlugin extends Plugin {

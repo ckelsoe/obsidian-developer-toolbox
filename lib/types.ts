@@ -25,9 +25,34 @@ export interface CountdownNoticeHandle {
 	promise: Promise<void>;
 }
 
+export interface DiagnosticsEntry {
+	label: string;
+	status: "ok" | "error" | "info";
+	elapsedMs: number | null;
+	timestamp: string;
+	body: string | null;
+}
+
+export interface DiagnosticsBus {
+	append(
+		label: string,
+		opts?: {
+			status?: "ok" | "error" | "info";
+			elapsedMs?: number;
+			body?: string | Record<string, unknown>;
+		},
+	): void;
+	appendError(label: string, error: unknown, opts?: { elapsedMs?: number }): void;
+	// Stores the sink and returns a detach function that clears it. Only the
+	// diagnostics tool attaches a sink; with no sink, entries are dropped.
+	attachSink(sink: (entry: DiagnosticsEntry) => void): () => void;
+	hasSink(): boolean;
+}
+
 export interface ToolboxLib {
 	clipboard: { writeText(text: string): Promise<void> };
 	context: { capture(opts?: Partial<CaptureContextOpts>): CapturedContext };
+	diagnostics: DiagnosticsBus;
 	pathRedact: {
 		home(p: string): string;
 		vault(p: string, vaultBase: string): string;
