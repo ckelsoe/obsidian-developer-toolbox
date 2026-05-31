@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Diagnostics log: a new tool that keeps a structured per-command results ledger as one markdown file in the vault. Each entry is a section with a label, status (ok, error, or info), an optional elapsed time, an ISO timestamp, and a body that is either a JSON block for a success payload or a fenced error with name, message, and stack. Other tools record entries through the shared `lib.diagnostics` bus, so the log fills as you use the toolbox. Use the "Copy diagnostics log", "Clear diagnostics log", and "Open diagnostics log" commands, or the ribbon (`scroll-text` icon), to work with the file. The log subfolder and an opt-in session-start snapshot are configurable, and disabling the tool turns recording off entirely.
+
 ## [0.8.1] - 2026-05-30
 
 ### Fixed
