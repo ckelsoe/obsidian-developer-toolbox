@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-06-01
+
 ### Added
 - Diagnostics log: a new tool that keeps a structured per-command results ledger as one markdown file in the vault. Each entry is a section with a label, status (ok, error, or info), an optional elapsed time, an ISO timestamp, and a body that is either a JSON block for a success payload or a fenced error with name, message, and stack. Other tools record entries through the shared `lib.diagnostics` bus, so the log fills as you use the toolbox. Use the "Copy diagnostics log", "Clear diagnostics log", and "Open diagnostics log" commands, or the ribbon (`scroll-text` icon), to work with the file. The log subfolder and an opt-in session-start snapshot are configurable, and disabling the tool turns recording off entirely.
 - Event spy: a new passive tool that observes Obsidian's event buses and records each firing to the diagnostics log so you can see event timing and order in the vault. Workspace watching covers file-open, active-leaf-change, and layout-change. Vault watching covers create, modify, delete, and rename. Editor changes (editor-change) can be watched too but are off by default because that event fires on every keystroke and would flood the log. Records go to the diagnostics log and require the Diagnostics log tool to be enabled; with it off, observed events are dropped. The spy filters out its own log writes (anything under the storage root) so recording an event cannot trigger another write and loop forever.
