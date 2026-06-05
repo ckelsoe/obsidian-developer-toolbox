@@ -35,3 +35,4 @@ declare module "obsidian" {
 		version: string;
 	}
 }
+/* eslint-enable no-undef */

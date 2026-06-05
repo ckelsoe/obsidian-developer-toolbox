@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.1] - 2026-06-05
+
+### Fixed
+- Cleared developer-dashboard scan findings by removing suppressed lint rules instead of disabling them. The context-capture helper now reads the Obsidian version from the exported `apiVersion` and the Electron version from `window.process.versions` behind a desktop guard, dropping two `obsidianmd/platform` disables. The `globals.d.ts` ambient augmentation pairs its `no-undef` block disable with a matching `eslint-enable`. No runtime behavior changed.
+
 ## [0.10.0] - 2026-06-05
 
 ### Changed

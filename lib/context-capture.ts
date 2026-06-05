@@ -1,4 +1,4 @@
-import { MarkdownView, Platform } from "obsidian";
+import { apiVersion, MarkdownView, Platform } from "obsidian";
 import type DeveloperToolboxPlugin from "../main";
 import type { CaptureContextOpts, CapturedContext, ToolboxLib } from "./types";
 import { redactHome, redactVault } from "./path-redact";
@@ -16,22 +16,19 @@ function detectOsFamily(): "windows" | "macos" | "linux" {
 }
 
 function detectObsidianVersion(): string {
-	// `App.appVersion` is undefined in Obsidian 1.12.7 (spike-verified 2026-05-28).
-	// The userAgent regex is the only reliable path. The obsidianmd/platform
-	// lint rule targets OS detection via navigator; here we use it for the
-	// Obsidian app version, not the OS.
-	// eslint-disable-next-line obsidianmd/platform -- userAgent used for app version, not OS
-	const match = navigator.userAgent.match(/obsidian\/([\d.]+)/i);
-	return match?.[1] ?? "unknown";
+	// Obsidian exports `apiVersion` (the installed app version). This is the
+	// documented source and avoids sniffing navigator.userAgent (which the
+	// obsidianmd/platform rule flags).
+	return apiVersion || "unknown";
 }
 
 function detectElectronVersion(): string {
-	// Same approach as detectObsidianVersion: Electron's default userAgent carries
-	// an "Electron/<version>" token. Avoids the node `process` global (not in this
-	// tsconfig's types). Falls back to "unknown" if the token is ever absent.
-	// eslint-disable-next-line obsidianmd/platform -- userAgent used for app version, not OS
-	const match = navigator.userAgent.match(/Electron\/([\d.]+)/i);
-	return match?.[1] ?? "unknown";
+	// Obsidian exposes no Electron version API. On desktop, read it from the Node
+	// `process` global via globalThis (no navigator sniffing, no node-module
+	// import). Mobile has no Electron, so report "unknown" there.
+	if (!Platform.isDesktop) return "unknown";
+	const proc = (window as { process?: { versions?: { electron?: string } } }).process;
+	return proc?.versions?.electron ?? "unknown";
 }
 
 function modeFromView(view: MarkdownView): CapturedContext["activeViewMode"] {
