@@ -1,13 +1,16 @@
-/* eslint-disable no-undef -- ambient type augmentation: TypeScript resolves obsidian's own Command and Hotkey types inside this `declare module` block, but ESLint's no-undef does not understand type-only references */
 import "obsidian";
 
+// Ambient augmentation of Obsidian's App with undocumented internals used by the
+// command inspector. Obsidian's own Command/Hotkey/PluginManifest types are
+// referenced via inline `import("obsidian").X` so ESLint's no-undef never fires
+// on bare type-only identifiers; that avoids needing an eslint-disable here.
 declare module "obsidian" {
 	interface App {
 		appVersion?: string;
 		plugins: {
 			enabledPlugins: Set<string>;
 			plugins: Record<string, unknown>;
-			manifests: Record<string, PluginManifest>;
+			manifests: Record<string, import("obsidian").PluginManifest>;
 			enablePlugin(id: string): Promise<void>;
 			disablePlugin(id: string): Promise<void>;
 			loadManifests?(): Promise<void>;
@@ -17,17 +20,17 @@ declare module "obsidian" {
 		// docs, so all access must be defensive and degrade gracefully if a future
 		// Obsidian build changes them. Confirm at runtime before trusting any one.
 		commands?: {
-			commands?: Record<string, Command>;
-			editorCommands?: Record<string, Command>;
-			listCommands?(): Command[];
-			findCommand?(id: string): Command | undefined;
+			commands?: Record<string, import("obsidian").Command>;
+			editorCommands?: Record<string, import("obsidian").Command>;
+			listCommands?(): import("obsidian").Command[];
+			findCommand?(id: string): import("obsidian").Command | undefined;
 			executeCommandById?(id: string): boolean;
 		};
 		hotkeyManager?: {
-			customKeys?: Record<string, Hotkey[]>;
-			defaultKeys?: Record<string, Hotkey[]>;
-			getHotkeys?(commandId: string): Hotkey[] | undefined;
-			getDefaultHotkeys?(commandId: string): Hotkey[] | undefined;
+			customKeys?: Record<string, import("obsidian").Hotkey[]>;
+			defaultKeys?: Record<string, import("obsidian").Hotkey[]>;
+			getHotkeys?(commandId: string): import("obsidian").Hotkey[] | undefined;
+			getDefaultHotkeys?(commandId: string): import("obsidian").Hotkey[] | undefined;
 		};
 	}
 
@@ -35,4 +38,3 @@ declare module "obsidian" {
 		version: string;
 	}
 }
-/* eslint-enable no-undef */

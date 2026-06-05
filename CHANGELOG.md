@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.2] - 2026-06-05
+
+### Fixed
+- Removed the last suppressed lint directive the developer-dashboard scan flagged. `globals.d.ts` now references Obsidian's `Command`/`Hotkey`/`PluginManifest` types via inline `import("obsidian").X`, so the `no-undef` block disable (and its unpaired enable) is gone entirely rather than described. No runtime change.
+
 ## [0.10.1] - 2026-06-05
 
 ### Fixed
