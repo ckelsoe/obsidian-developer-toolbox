@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-06-05
+
+### Changed
+- Requires Obsidian 1.13.0 or later. Obsidian keeps serving 0.9.0 to vaults on older versions, so nothing breaks for them.
+- Settings migrated to Obsidian's declarative settings API. The storage folder and each tool's enabled toggle are now indexed in Obsidian's global settings search, and every tool is its own labeled group whose settings body shows or hides live as you toggle it. Each tool's own settings keep their existing custom controls. No setting changed its stored value or behavior.
+- Replaced the deprecated `setWarning()` call on the reloader's remove-plugin button with `setDestructive()` for the Obsidian 1.13.0 API.
+
 ## [0.9.0] - 2026-06-01
 
 ### Added

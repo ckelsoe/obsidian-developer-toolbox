@@ -1,8 +1,8 @@
 {
 	"id": "developer-toolbox",
 	"name": "Developer Toolbox",
-	"version": "0.9.0",
-	"minAppVersion": "1.5.7",
+	"version": "0.10.0",
+	"minAppVersion": "1.13.0",
 	"description": "Developer tools to capture annotated screenshots with structured context, reload plugins live, and inspect icons, CSS variables, and commands.",
 	"author": "Charles Kelsoe",
 	"authorUrl": "https://github.com/ckelsoe",

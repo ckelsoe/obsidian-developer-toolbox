@@ -1,6 +1,5 @@
-import { App, PluginSettingTab, Setting } from "obsidian";
+import { App, PluginSettingTab, Setting, type SettingDefinitionItem, type SettingGroupItem } from "obsidian";
 import type DeveloperToolboxPlugin from "./main";
-import type { ToolHandle } from "./tools/types";
 import { readPluginVersionFromDisk } from "./lib/manifest-version";
 
 export interface ToolStoredSettings {
@@ -89,34 +88,112 @@ export class ToolboxSettingTab extends PluginSettingTab {
 		super(app, plugin);
 	}
 
-	display(): void {
-		const { containerEl } = this;
-		containerEl.empty();
-
-		this.renderStorageSetting(containerEl);
+	getSettingDefinitions(): SettingDefinitionItem[] {
+		const defs: SettingDefinitionItem[] = [
+			{
+				name: "Storage folder",
+				desc: "Root folder for all tool output. Each tool saves into a subfolder of this. Changing it takes effect for new output; reopen this tab to refresh the subfolder paths shown below.",
+				control: { type: "text", key: "storageRoot" },
+			},
+		];
 
 		for (const tool of this.plugin.tools) {
-			this.renderToolSection(containerEl, tool);
+			const items: SettingGroupItem[] = [
+				{
+					name: "Enabled",
+					desc: "Turn this tool's commands, ribbon icons, and side effects on or off.",
+					control: { type: "toggle", key: `tool:${tool.id}:enabled` },
+				},
+			];
+
+			// A tool's own settings are arbitrary imperative DOM, so they live in
+			// a render row that shows only while the tool is enabled. Render rows
+			// are not search-indexable; the enabled toggle and heading are.
+			if (tool.renderSettings) {
+				items.push({
+					name: "",
+					searchable: false,
+					visible: () =>
+						this.plugin.data.tools[tool.id]?.enabled ?? tool.defaultSettings.enabled,
+					render: (setting: Setting) => {
+						const host = setting.settingEl;
+						host.empty();
+						host.addClass("toolbox-tool-body-block");
+						const body = host.createDiv({ cls: "toolbox-tool-body" });
+						tool.renderSettings?.(body, this.plugin.buildContext(tool));
+					},
+				});
+			}
+
+			defs.push({ type: "group", heading: tool.displayName, items });
 		}
 
-		this.renderFooter(containerEl);
+		defs.push({
+			name: "",
+			searchable: false,
+			render: (setting: Setting) => {
+				this.renderFooter(setting);
+			},
+		});
+
+		return defs;
 	}
 
-	private renderStorageSetting(parent: HTMLElement): void {
-		new Setting(parent)
-			.setName("Storage folder")
-			.setDesc("Root folder for all tool output. Each tool saves into a subfolder of this. Changing it takes effect for new output; reopen this tab to refresh the subfolder paths shown below.")
-			.addText((t) => {
-				t.setValue(this.plugin.data.storageRoot);
-				t.onChange(async (value) => {
-					this.plugin.data.storageRoot = value.trim() || "_dev-tools";
-					await saveSettings(this.plugin);
-				});
-			});
+	// Routes declarative controls to the toolbox's nested data store (storageRoot
+	// plus a per-tool enabled flag under data.tools[id]). Tool-body fields are not
+	// declarative controls; they persist themselves through buildContext, so they
+	// never reach these methods.
+	getControlValue(key: string): unknown {
+		if (key === "storageRoot") {
+			return this.plugin.data.storageRoot;
+		}
+		const id = this.toolIdFromKey(key);
+		if (id !== null) {
+			const tool = this.plugin.tools.find((t) => t.id === id);
+			return this.plugin.data.tools[id]?.enabled ?? tool?.defaultSettings.enabled ?? false;
+		}
+		return undefined;
 	}
 
-	private renderFooter(parent: HTMLElement): void {
-		const footer = parent.createDiv({ cls: "toolbox-version-footer" });
+	async setControlValue(key: string, value: unknown): Promise<void> {
+		if (key === "storageRoot") {
+			this.plugin.data.storageRoot =
+				(typeof value === "string" ? value.trim() : "") || "_dev-tools";
+			await saveSettings(this.plugin);
+			return;
+		}
+
+		const id = this.toolIdFromKey(key);
+		if (id === null) return;
+
+		const tool = this.plugin.tools.find((t) => t.id === id);
+		const stored: ToolStoredSettings = this.plugin.data.tools[id] ?? {
+			...(tool?.defaultSettings ?? { enabled: false }),
+		};
+		stored.enabled = Boolean(value);
+		this.plugin.data.tools[id] = stored;
+		await saveSettings(this.plugin);
+
+		if (tool) {
+			if (stored.enabled) this.plugin.enableTool(tool);
+			else this.plugin.disableTool(tool);
+		}
+		// Enabling or disabling a tool shows or hides its settings body.
+		this.update();
+	}
+
+	// Parse a `tool:<id>:enabled` control key back to the tool id, or null when
+	// the key is not a per-tool enabled toggle.
+	private toolIdFromKey(key: string): string | null {
+		const match = /^tool:(.+):enabled$/.exec(key);
+		return match?.[1] ?? null;
+	}
+
+	// Renders the version + GitHub link footer into a trailing settings row.
+	private renderFooter(setting: Setting): void {
+		const footer = setting.settingEl;
+		footer.empty();
+		footer.addClass("toolbox-version-footer");
 		const versionEl = footer.createSpan({
 			text: `Developer Toolbox v${this.plugin.manifest.version}`,
 		});
@@ -130,37 +207,5 @@ export class ToolboxSettingTab extends PluginSettingTab {
 		void readPluginVersionFromDisk(this.app, this.plugin.manifest.id).then((v) => {
 			if (v) versionEl.setText(`Developer Toolbox v${v}`);
 		});
-	}
-
-	private renderToolSection(parent: HTMLElement, tool: ToolHandle): void {
-		const section = parent.createDiv({ cls: "toolbox-tool-section" });
-
-		new Setting(section)
-			.setName(tool.displayName)
-			.setHeading();
-
-		const storedDefaults = tool.defaultSettings;
-		const stored: ToolStoredSettings = this.plugin.data.tools[tool.id] ?? storedDefaults;
-
-		new Setting(section)
-			.setName("Enabled")
-			.setDesc("Turn this tool's commands, ribbon icons, and side effects on or off.")
-			.addToggle((toggle) => {
-				toggle
-					.setValue(stored.enabled)
-					.onChange(async (value) => {
-						stored.enabled = value;
-						this.plugin.data.tools[tool.id] = stored;
-						await saveSettings(this.plugin);
-						if (value) this.plugin.enableTool(tool);
-						else this.plugin.disableTool(tool);
-						this.display();
-					});
-			});
-
-		if (stored.enabled && tool.renderSettings) {
-			const body = section.createDiv({ cls: "toolbox-tool-body" });
-			tool.renderSettings(body, this.plugin.buildContext(tool));
-		}
 	}
 }

@@ -110,7 +110,7 @@ function renderDevList(listEl: HTMLElement, ctx: Ctx): void {
 			.addButton((btn) => {
 				btn
 					.setButtonText("Remove")
-					.setWarning()
+					.setDestructive()
 					.onClick(() => void removeDevPlugin(listEl, ctx, id));
 			});
 	}

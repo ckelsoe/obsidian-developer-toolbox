@@ -481,6 +481,13 @@
 	margin: 0.5em 0;
 }
 
+/* Full-width host for a tool's own imperative settings DOM, rendered as a
+   render row inside the declarative settings tab. Overrides the default
+   .setting-item flex row so the tool body stacks full width. */
+.setting-item.toolbox-tool-body-block {
+	display: block;
+}
+
 .toolbox-version-footer {
 	display: flex;
 	gap: 0.6em;
