@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.3] - 2026-06-10
+
+### Changed
+- tsconfig `lib` extended to ES2017/ES2018 to match the code and the esbuild target. Type-check-only; no runtime change in the built plugin.
+
 ## [0.10.2] - 2026-06-05
 
 ### Fixed
