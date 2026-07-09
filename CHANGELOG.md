@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.4] - 2026-07-09
+
+### Fixed
+- The plugin reloader no longer reloads a watched plugin unless its build output actually changed. It now records a content hash of each watched plugin's `main.js`, `manifest.json`, and `styles.css`, and reloads only when that content differs. Phantom file-watch events (metadata touches, atomic-save settling, antivirus or indexer access) and byte-identical rebuilds no longer trigger a needless reload.
+- The file watch is now armed a short moment after the workspace is ready instead of during load, so a stray startup event can no longer reload a plugin the instant Obsidian opens. Together these remove the reload-driven UI stalls some setups saw on startup and at seemingly random times.
+
 ## [0.10.3] - 2026-06-10
 
 ### Changed

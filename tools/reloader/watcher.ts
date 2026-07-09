@@ -1,10 +1,18 @@
 import { FileSystemAdapter, Notice, type App } from "obsidian";
 import type { ReloaderSettings } from "./types";
 import type { ReloadLog } from "./log";
+import {
+	WATCHED_FILES,
+	signatureFromReads,
+	shouldReload,
+	type ReadResult,
+} from "./signature";
 
-// A rebuild touches one of these. Watch the plugin folder and react only to
-// these names so unrelated writes (data.json on settings change) are ignored.
-const WATCHED_FILES = new Set(["main.js", "manifest.json", "styles.css"]);
+// Membership set for the directory-watch filter. WATCHED_FILES (shared with the
+// signature helper) is the source of truth; a Set makes the per-event lookup
+// cheap. Reacting only to these names ignores unrelated writes (e.g. data.json
+// on a settings change), which Obsidian touches on its own.
+const WATCHED_FILE_SET = new Set<string>(WATCHED_FILES);
 
 interface FsWatcherLike {
 	close(): void;
@@ -15,6 +23,7 @@ interface FsLike {
 		path: string,
 		listener: (eventType: string, filename: string | null) => void,
 	): FsWatcherLike;
+	readFileSync(path: string, encoding: "utf8"): string;
 }
 
 interface PathLike {
@@ -37,6 +46,15 @@ function requireNode<T>(id: string): T | null {
 export class PluginReloadWatcher {
 	private watchers: FsWatcherLike[] = [];
 	private timers = new Map<string, number>();
+	// Node fs/path handles, resolved once in start() and reused to re-read the
+	// watched files when an event fires, so a no-op change can be detected.
+	private fs: FsLike | null = null;
+	private path: PathLike | null = null;
+	// Per-plugin absolute folder and the content signature captured when we last
+	// armed or reloaded it. A watch event whose fresh signature equals the
+	// baseline is a phantom / redundant write and is skipped.
+	private readonly dirs = new Map<string, string>();
+	private readonly baselines = new Map<string, string>();
 
 	constructor(
 		private app: App,
@@ -53,6 +71,8 @@ export class PluginReloadWatcher {
 			this.diag("Auto-watch unavailable on this platform.", true);
 			return;
 		}
+		this.fs = fs;
+		this.path = path;
 
 		const base = adapter.getBasePath();
 		const watched: string[] = [];
@@ -63,6 +83,11 @@ export class PluginReloadWatcher {
 				continue;
 			}
 			const dir = path.join(base, manifest.dir);
+			this.dirs.set(id, dir);
+			// Baseline the folder's build output as it is right now, which is the
+			// build Obsidian already has loaded. A later event whose signature still
+			// equals this baseline is a no-op and is skipped in fire().
+			this.baselines.set(id, this.signatureFor(id) ?? "");
 			try {
 				// Watch the directory, not main.js directly. esbuild writes via
 				// atomic rename, which invalidates a file-bound watch after the
@@ -72,7 +97,7 @@ export class PluginReloadWatcher {
 					// filename (some platforms emit null on rename/atomic writes) and
 					// writes to other files like data.json, which Obsidian touches on
 					// its own and would otherwise fire phantom reloads every few minutes.
-					if (!filename || !WATCHED_FILES.has(filename)) return;
+					if (!filename || !WATCHED_FILE_SET.has(filename)) return;
 					this.log.append(`detected change: ${filename} (${manifest.name})`);
 					this.schedule(id);
 				});
@@ -103,6 +128,35 @@ export class PluginReloadWatcher {
 		this.watchers = [];
 		for (const t of this.timers.values()) window.clearTimeout(t);
 		this.timers.clear();
+		this.dirs.clear();
+		this.baselines.clear();
+	}
+
+	// Read one watched file. `content` on success, `absent` only for a genuine
+	// not-found (ENOENT), `error` for any other failure (e.g. the file locked
+	// mid atomic-write). The absent/error split matters: a transient read error
+	// must NOT be encoded as a stable `absent`, or a real rebuild could alias to
+	// the baseline and be skipped. Callers treat `error` as "unknown -> reload".
+	private readState(dir: string, name: string): ReadResult {
+		if (!this.fs || !this.path) return { kind: "error" };
+		try {
+			return {
+				kind: "content",
+				text: this.fs.readFileSync(this.path.join(dir, name), "utf8"),
+			};
+		} catch (e) {
+			const code = (e as { code?: string }).code;
+			return code === "ENOENT" ? { kind: "absent" } : { kind: "error" };
+		}
+	}
+
+	// Current content signature of a watched plugin's build output, or null when
+	// its folder is unknown (never armed) or any file is transiently unreadable,
+	// so fire() falls through to a reload rather than trusting a partial read.
+	private signatureFor(id: string): string | null {
+		const dir = this.dirs.get(id);
+		if (dir === undefined) return null;
+		return signatureFromReads((name) => this.readState(dir, name));
 	}
 
 	// Coalesce the burst of events a single build emits into one change signal.
@@ -117,6 +171,17 @@ export class PluginReloadWatcher {
 
 	private fire(id: string): void {
 		this.timers.delete(id);
+		// Skip when the watched files are byte-identical to the last armed/reloaded
+		// state: a phantom fs.watch event or a redundant identical rebuild, where
+		// reloading would tear down and rebuild the plugin for nothing. When a
+		// signature cannot be computed (fs/path unavailable) we fall through and
+		// reload, preserving the previous always-reload behavior as the safe default.
+		const current = this.signatureFor(id);
+		if (!shouldReload(this.baselines.get(id), current)) {
+			this.log.append(`change event for ${id}; content unchanged, skipping reload`);
+			return;
+		}
+		if (current !== null) this.baselines.set(id, current);
 		this.onChange(id);
 	}
 

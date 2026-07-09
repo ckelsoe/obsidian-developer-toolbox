@@ -12,6 +12,10 @@ import {
 
 type Ctx = ToolContext<ReloaderSettings>;
 
+// Grace after layout-ready before arming the file watch, so startup file I/O
+// settles first. Short enough that a dev is not rebuilding within it.
+const ARM_GRACE_MS = 1500;
+
 const reloader: ToolHandle<ReloaderSettings> = {
 	id: "reloader",
 	displayName: "Plugin reloader",
@@ -39,7 +43,9 @@ const reloader: ToolHandle<ReloaderSettings> = {
 		);
 		controller.attachStatusBar(statusBar);
 
-		controller.start();
+		// Arm after layout-ready plus a short grace so startup file I/O settles
+		// before the watch exists (avoids a phantom-event no-op reload on launch).
+		controller.startDeferred(ARM_GRACE_MS);
 
 		// Fire the moment the new build runs, so a reload visibly self-confirms.
 		// Read the version from disk: Obsidian's in-memory manifest is stale after

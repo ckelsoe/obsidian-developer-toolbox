@@ -25,6 +25,10 @@ export class ReloaderController {
 	private iconEl: HTMLElement | null = null;
 	private statusEl: HTMLElement | null = null;
 	private doneTimer: number | null = null;
+	// Pending deferred-arm timer (see startDeferred) and a disposed guard so a
+	// late-firing arm callback does not build a watcher after teardown.
+	private armTimer: number | null = null;
+	private disposed = false;
 	private state: ReloadState = "ready";
 	// The running toolbox build's version, read from disk so it stays accurate
 	// across a live self-reload. Shown persistently in the status bar.
@@ -93,6 +97,14 @@ export class ReloaderController {
 	}
 
 	start(): void {
+		// Never arm after teardown: a stale settings-tab reference calling
+		// restart() post-dispose would otherwise create a live fs.watch with no
+		// owner left to stop it.
+		if (this.disposed) return;
+		// Idempotent: tear down any existing watcher first so a second call (e.g.
+		// a settings restart() racing the deferred startup arm) can never leave two
+		// concurrent watchers with duplicate fs.watch subscriptions.
+		this.stop();
 		if (!this.ctx.settings.devPluginIds.length) return;
 		this.watcher = new PluginReloadWatcher(
 			this.ctx.app,
@@ -103,7 +115,29 @@ export class ReloaderController {
 		this.watcher.start();
 	}
 
+	// Arm the watcher only after the workspace is ready plus a short grace, so
+	// Obsidian's own startup file I/O has settled before the watch exists. Armed
+	// during onload, a phantom fs.watch event at startup would fire a no-op
+	// reload that tears down and rebuilds the plugin, freezing the UI. The
+	// content baseline in the watcher covers any event that still slips through;
+	// this defers arming so those events mostly never occur. Immediate start()
+	// stays the path for restart() (a settings-driven re-arm wants no delay).
+	startDeferred(graceMs: number): void {
+		if (!this.ctx.settings.devPluginIds.length) return;
+		this.ctx.app.workspace.onLayoutReady(() => {
+			if (this.disposed) return;
+			this.armTimer = window.setTimeout(() => {
+				this.armTimer = null;
+				if (!this.disposed) this.start();
+			}, graceMs);
+		});
+	}
+
 	stop(): void {
+		if (this.armTimer !== null) {
+			window.clearTimeout(this.armTimer);
+			this.armTimer = null;
+		}
 		this.watcher?.stop();
 		this.watcher = null;
 	}
@@ -114,6 +148,7 @@ export class ReloaderController {
 	}
 
 	dispose(): void {
+		this.disposed = true;
 		this.stop();
 		if (this.doneTimer !== null) {
 			window.clearTimeout(this.doneTimer);
