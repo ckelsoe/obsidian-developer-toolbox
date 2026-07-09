@@ -1,7 +1,12 @@
 import { FileSystemAdapter, Notice, type App } from "obsidian";
 import type { ReloaderSettings } from "./types";
 import type { ReloadLog } from "./log";
-import { WATCHED_FILES, buildSignature } from "./signature";
+import {
+	WATCHED_FILES,
+	signatureFromReads,
+	shouldReload,
+	type ReadResult,
+} from "./signature";
 
 // Membership set for the directory-watch filter. WATCHED_FILES (shared with the
 // signature helper) is the source of truth; a Set makes the per-event lookup
@@ -132,10 +137,7 @@ export class PluginReloadWatcher {
 	// mid atomic-write). The absent/error split matters: a transient read error
 	// must NOT be encoded as a stable `absent`, or a real rebuild could alias to
 	// the baseline and be skipped. Callers treat `error` as "unknown -> reload".
-	private readState(
-		dir: string,
-		name: string,
-	): { kind: "content"; text: string } | { kind: "absent" } | { kind: "error" } {
+	private readState(dir: string, name: string): ReadResult {
 		if (!this.fs || !this.path) return { kind: "error" };
 		try {
 			return {
@@ -154,16 +156,7 @@ export class PluginReloadWatcher {
 	private signatureFor(id: string): string | null {
 		const dir = this.dirs.get(id);
 		if (dir === undefined) return null;
-		let unreadable = false;
-		const signature = buildSignature((name) => {
-			const state = this.readState(dir, name);
-			if (state.kind === "error") {
-				unreadable = true;
-				return null;
-			}
-			return state.kind === "content" ? state.text : null;
-		});
-		return unreadable ? null : signature;
+		return signatureFromReads((name) => this.readState(dir, name));
 	}
 
 	// Coalesce the burst of events a single build emits into one change signal.
@@ -184,7 +177,7 @@ export class PluginReloadWatcher {
 		// signature cannot be computed (fs/path unavailable) we fall through and
 		// reload, preserving the previous always-reload behavior as the safe default.
 		const current = this.signatureFor(id);
-		if (current !== null && current === this.baselines.get(id)) {
+		if (!shouldReload(this.baselines.get(id), current)) {
 			this.log.append(`change event for ${id}; content unchanged, skipping reload`);
 			return;
 		}

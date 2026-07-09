@@ -2,6 +2,9 @@ import {
 	WATCHED_FILES,
 	fnv1a,
 	buildSignature,
+	signatureFromReads,
+	shouldReload,
+	type ReadResult,
 } from "../tools/reloader/signature";
 
 // A reader backed by a plain map of name -> content. Missing key => null, i.e.
@@ -66,6 +69,49 @@ describe("reloader signature (skip-if-unchanged)", () => {
 			readerFor({ "main.js": "x", "manifest.json": "y" }),
 		);
 		expect(noCss).toContain("styles.css:absent");
+	});
+
+	it("signatureFromReads: content-only matches buildSignature over the same content", () => {
+		const content: Record<string, string> = {
+			"main.js": "a",
+			"manifest.json": "b",
+			"styles.css": "c",
+		};
+		const viaReads = signatureFromReads((name) => ({
+			kind: "content",
+			text: content[name] ?? "",
+		}));
+		expect(viaReads).toBe(buildSignature((name) => content[name] ?? null));
+	});
+
+	it("signatureFromReads: any error file yields null (unknown -> reload)", () => {
+		const reads: Record<string, ReadResult> = {
+			"main.js": { kind: "content", text: "x" },
+			"manifest.json": { kind: "error" },
+			"styles.css": { kind: "absent" },
+		};
+		expect(signatureFromReads((name) => reads[name] ?? { kind: "error" })).toBeNull();
+	});
+
+	it("signatureFromReads: a genuine absence is stable, not null", () => {
+		const reads: Record<string, ReadResult> = {
+			"main.js": { kind: "content", text: "x" },
+			"manifest.json": { kind: "content", text: "y" },
+			"styles.css": { kind: "absent" },
+		};
+		const sig = signatureFromReads((name) => reads[name] ?? { kind: "error" });
+		expect(sig).not.toBeNull();
+		expect(sig).toContain("styles.css:absent");
+		// Deterministic across calls.
+		expect(sig).toBe(signatureFromReads((name) => reads[name] ?? { kind: "error" }));
+	});
+
+	it("shouldReload: skips only when the current signature is known and equal", () => {
+		expect(shouldReload("sig", "sig")).toBe(false); // unchanged -> skip
+		expect(shouldReload("sig", "other")).toBe(true); // changed -> reload
+		expect(shouldReload("sig", null)).toBe(true); // unknown -> reload
+		expect(shouldReload(undefined, "sig")).toBe(true); // no baseline -> reload
+		expect(shouldReload(undefined, null)).toBe(true);
 	});
 
 	it("signature order is independent of reader lookup order", () => {

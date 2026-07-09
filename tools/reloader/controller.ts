@@ -97,6 +97,10 @@ export class ReloaderController {
 	}
 
 	start(): void {
+		// Never arm after teardown: a stale settings-tab reference calling
+		// restart() post-dispose would otherwise create a live fs.watch with no
+		// owner left to stop it.
+		if (this.disposed) return;
 		// Idempotent: tear down any existing watcher first so a second call (e.g.
 		// a settings restart() racing the deferred startup arm) can never leave two
 		// concurrent watchers with duplicate fs.watch subscriptions.
