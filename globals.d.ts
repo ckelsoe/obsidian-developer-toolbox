@@ -1,4 +1,4 @@
-import "obsidian";
+import 'obsidian';
 
 declare global {
 	// Obsidian installs createEl and friends on every window, but obsidian.d.ts
@@ -19,13 +19,13 @@ declare global {
 // command inspector. Obsidian's own Command/Hotkey/PluginManifest types are
 // referenced via inline `import("obsidian").X` so ESLint's no-undef never fires
 // on bare type-only identifiers; that avoids needing an eslint-disable here.
-declare module "obsidian" {
+declare module 'obsidian' {
 	interface App {
 		appVersion?: string;
 		plugins: {
 			enabledPlugins: Set<string>;
 			plugins: Record<string, unknown>;
-			manifests: Record<string, import("obsidian").PluginManifest>;
+			manifests: Record<string, import('obsidian').PluginManifest>;
 			enablePlugin(id: string): Promise<void>;
 			disablePlugin(id: string): Promise<void>;
 			loadManifests?(): Promise<void>;
@@ -35,17 +35,21 @@ declare module "obsidian" {
 		// docs, so all access must be defensive and degrade gracefully if a future
 		// Obsidian build changes them. Confirm at runtime before trusting any one.
 		commands?: {
-			commands?: Record<string, import("obsidian").Command>;
-			editorCommands?: Record<string, import("obsidian").Command>;
-			listCommands?(): import("obsidian").Command[];
-			findCommand?(id: string): import("obsidian").Command | undefined;
+			commands?: Record<string, import('obsidian').Command>;
+			editorCommands?: Record<string, import('obsidian').Command>;
+			listCommands?(): import('obsidian').Command[];
+			findCommand?(id: string): import('obsidian').Command | undefined;
 			executeCommandById?(id: string): boolean;
 		};
 		hotkeyManager?: {
-			customKeys?: Record<string, import("obsidian").Hotkey[]>;
-			defaultKeys?: Record<string, import("obsidian").Hotkey[]>;
-			getHotkeys?(commandId: string): import("obsidian").Hotkey[] | undefined;
-			getDefaultHotkeys?(commandId: string): import("obsidian").Hotkey[] | undefined;
+			customKeys?: Record<string, import('obsidian').Hotkey[]>;
+			defaultKeys?: Record<string, import('obsidian').Hotkey[]>;
+			getHotkeys?(
+				commandId: string,
+			): import('obsidian').Hotkey[] | undefined;
+			getDefaultHotkeys?(
+				commandId: string,
+			): import('obsidian').Hotkey[] | undefined;
 		};
 	}
 

@@ -11,6 +11,10 @@ node_modules
 # Build output
 main.js
 
+# Stryker mutation-testing sandbox + reports
+.stryker-tmp
+reports/mutation
+
 # Exclude sourcemaps
 *.map
 

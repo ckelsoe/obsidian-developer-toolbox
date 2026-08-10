@@ -1,14 +1,19 @@
-import type { ToolboxLib } from "../../../lib/types";
-import { captureViaCapturePage, isCapturePageAvailable } from "./capture-page";
-import { captureViaFallback, isFallbackAvailable } from "./fallback";
-import { awaitCountdown, hideCountdownElements, hideElement, restoreElements } from "./countdown";
+import type { ToolboxLib } from '../../../lib/types';
+import { captureViaCapturePage, isCapturePageAvailable } from './capture-page';
+import { captureViaFallback, isFallbackAvailable } from './fallback';
+import {
+	awaitCountdown,
+	hideCountdownElements,
+	hideElement,
+	restoreElements,
+} from './countdown';
 
 export interface CapturedImage {
 	pngBlob: Blob;
 	widthPx: number;
 	heightPx: number;
 	capturedAt: number;
-	path: "capturePage" | "fallback";
+	path: 'capturePage' | 'fallback';
 }
 
 export interface CaptureOpts {
@@ -17,14 +22,19 @@ export interface CaptureOpts {
 }
 
 async function nextFrame(): Promise<void> {
-	await new Promise<void>((resolve) => window.requestAnimationFrame(() => resolve()));
+	await new Promise<void>((resolve) =>
+		window.requestAnimationFrame(() => resolve()),
+	);
 }
 
 async function sleep(ms: number): Promise<void> {
 	await new Promise<void>((resolve) => window.setTimeout(resolve, ms));
 }
 
-export async function capture(opts: CaptureOpts, lib: ToolboxLib): Promise<CapturedImage> {
+export async function capture(
+	opts: CaptureOpts,
+	lib: ToolboxLib,
+): Promise<CapturedImage> {
 	const delayMs = opts.delayMs ?? 0;
 	if (delayMs >= 1000) {
 		// Long delay: show the countdown so the user can navigate or open a menu.
@@ -61,10 +71,13 @@ export async function capture(opts: CaptureOpts, lib: ToolboxLib): Promise<Captu
 					widthPx: result.widthPx,
 					heightPx: result.heightPx,
 					capturedAt: Date.now(),
-					path: "capturePage",
+					path: 'capturePage',
 				};
 			} catch (primaryErr) {
-				console.warn("[developer-toolbox] capturePage failed, falling back", primaryErr);
+				console.warn(
+					'[developer-toolbox] capturePage failed, falling back',
+					primaryErr,
+				);
 				if (!isFallbackAvailable()) {
 					throw primaryErr;
 				}
@@ -72,7 +85,9 @@ export async function capture(opts: CaptureOpts, lib: ToolboxLib): Promise<Captu
 		}
 
 		if (!isFallbackAvailable()) {
-			throw new Error("No capture path is available in this Obsidian build.");
+			throw new Error(
+				'No capture path is available in this Obsidian build.',
+			);
 		}
 
 		const result = await captureViaFallback();
@@ -81,7 +96,7 @@ export async function capture(opts: CaptureOpts, lib: ToolboxLib): Promise<Captu
 			widthPx: result.widthPx,
 			heightPx: result.heightPx,
 			capturedAt: Date.now(),
-			path: "fallback",
+			path: 'fallback',
 		};
 	} finally {
 		restore();

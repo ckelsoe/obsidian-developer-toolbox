@@ -1,10 +1,13 @@
-import { Notice } from "obsidian";
-import type { Disposable, ToolContext, ToolHandle } from "../types";
-import { DEFAULT_ISSUE_CAPTURE_SETTINGS, type IssueCaptureSettings } from "./types";
-import { capture, type CapturedImage } from "./capture";
-import { IssueDialog } from "./modal";
-import { dataUrlToBlob } from "./annotation/stage";
-import { renderIssueCaptureSettings } from "./settings";
+import { Notice } from 'obsidian';
+import type { Disposable, ToolContext, ToolHandle } from '../types';
+import {
+	DEFAULT_ISSUE_CAPTURE_SETTINGS,
+	type IssueCaptureSettings,
+} from './types';
+import { capture, type CapturedImage } from './capture';
+import { IssueDialog } from './modal';
+import { dataUrlToBlob } from './annotation/stage';
+import { renderIssueCaptureSettings } from './settings';
 
 type Ctx = ToolContext<IssueCaptureSettings>;
 
@@ -39,7 +42,7 @@ class IssueCaptureHandlers {
 			});
 			dialog.open();
 		} catch (e) {
-			new Notice("Screenshot failed: " + (e as Error).message, 8000);
+			new Notice('Screenshot failed: ' + (e as Error).message, 8000);
 		}
 	}
 
@@ -47,7 +50,7 @@ class IssueCaptureHandlers {
 	resumeDraft(): void {
 		const draft = this.ctx.settings.annotationDraft;
 		if (!draft) {
-			new Notice("No saved annotation draft to resume.", 3000);
+			new Notice('No saved annotation draft to resume.', 3000);
 			return;
 		}
 		const settings = this.ctx.settings;
@@ -57,7 +60,7 @@ class IssueCaptureHandlers {
 			widthPx: draft.serialized.width,
 			heightPx: draft.serialized.height,
 			capturedAt: draft.capturedAt,
-			path: "capturePage",
+			path: 'capturePage',
 		};
 		const context = this.ctx.lib.context.capture({
 			includeVaultName: settings.includeVaultName,
@@ -76,59 +79,64 @@ class IssueCaptureHandlers {
 }
 
 const issueCapture: ToolHandle<IssueCaptureSettings> = {
-	id: "issue-capture",
-	displayName: "Issue capture",
+	id: 'issue-capture',
+	displayName: 'Issue capture',
 	defaultSettings: DEFAULT_ISSUE_CAPTURE_SETTINGS,
 
 	register(ctx: Ctx): Disposable {
 		const handlers = new IssueCaptureHandlers(ctx);
 
 		const ribbonScreenshot = ctx.plugin.addRibbonIcon(
-			"camera",
-			"Screenshot now",
-			() => void handlers.startCapture({
-				withScreenshot: true,
-				delayMs: ctx.settings.immediateSettleMs,
-			}),
+			'camera',
+			'Screenshot now',
+			() =>
+				void handlers.startCapture({
+					withScreenshot: true,
+					delayMs: ctx.settings.immediateSettleMs,
+				}),
 		);
 		const ribbonDelayed = ctx.plugin.addRibbonIcon(
-			"timer",
-			"Delayed screenshot",
-			() => void handlers.startCapture({
-				withScreenshot: true,
-				delayMs: ctx.settings.delayedCaptureSeconds * 1000,
-			}),
+			'timer',
+			'Delayed screenshot',
+			() =>
+				void handlers.startCapture({
+					withScreenshot: true,
+					delayMs: ctx.settings.delayedCaptureSeconds * 1000,
+				}),
 		);
 		const ribbonIssue = ctx.plugin.addRibbonIcon(
-			"message-square-plus",
-			"Open issue dialog",
+			'message-square-plus',
+			'Open issue dialog',
 			() => void handlers.startCapture({ withScreenshot: false }),
 		);
 
 		ctx.plugin.addCommand({
-			id: "screenshot-now",
-			name: "Screenshot now",
-			callback: () => void handlers.startCapture({
-				withScreenshot: true,
-				delayMs: ctx.settings.immediateSettleMs,
-			}),
+			id: 'screenshot-now',
+			name: 'Screenshot now',
+			callback: () =>
+				void handlers.startCapture({
+					withScreenshot: true,
+					delayMs: ctx.settings.immediateSettleMs,
+				}),
 		});
 		ctx.plugin.addCommand({
-			id: "delayed-screenshot",
-			name: "Delayed screenshot",
-			callback: () => void handlers.startCapture({
-				withScreenshot: true,
-				delayMs: ctx.settings.delayedCaptureSeconds * 1000,
-			}),
+			id: 'delayed-screenshot',
+			name: 'Delayed screenshot',
+			callback: () =>
+				void handlers.startCapture({
+					withScreenshot: true,
+					delayMs: ctx.settings.delayedCaptureSeconds * 1000,
+				}),
 		});
 		ctx.plugin.addCommand({
-			id: "text-only-issue",
-			name: "Text-only issue",
-			callback: () => void handlers.startCapture({ withScreenshot: false }),
+			id: 'text-only-issue',
+			name: 'Text-only issue',
+			callback: () =>
+				void handlers.startCapture({ withScreenshot: false }),
 		});
 		ctx.plugin.addCommand({
-			id: "resume-annotation-draft",
-			name: "Resume annotation draft",
+			id: 'resume-annotation-draft',
+			name: 'Resume annotation draft',
 			callback: () => handlers.resumeDraft(),
 		});
 

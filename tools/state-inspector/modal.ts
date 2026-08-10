@@ -1,8 +1,20 @@
-import { App, ButtonComponent, Modal, Notice, Setting, TextAreaComponent } from "obsidian";
-import type { CapturedContext, ToolboxLib } from "../../lib/types";
-import type DeveloperToolboxPlugin from "../../main";
-import { FIELD_ROWS, formatBlob, formatFieldValue, formatRowSummary } from "./format";
-import type { StateInspectorSettings } from "./types";
+import {
+	App,
+	ButtonComponent,
+	Modal,
+	Notice,
+	Setting,
+	TextAreaComponent,
+} from 'obsidian';
+import type { CapturedContext, ToolboxLib } from '../../lib/types';
+import type DeveloperToolboxPlugin from '../../main';
+import {
+	FIELD_ROWS,
+	formatBlob,
+	formatFieldValue,
+	formatRowSummary,
+} from './format';
+import type { StateInspectorSettings } from './types';
 
 interface StateInspectorOpts {
 	settings: StateInspectorSettings;
@@ -17,7 +29,11 @@ export class StateInspectorModal extends Modal {
 	private lib: ToolboxLib;
 	private context: CapturedContext;
 
-	constructor(app: App, _plugin: DeveloperToolboxPlugin, opts: StateInspectorOpts) {
+	constructor(
+		app: App,
+		_plugin: DeveloperToolboxPlugin,
+		opts: StateInspectorOpts,
+	) {
 		super(app);
 		this.settings = opts.settings;
 		this.lib = opts.lib;
@@ -29,7 +45,7 @@ export class StateInspectorModal extends Modal {
 	}
 
 	onOpen(): void {
-		this.titleEl.setText("Live state inspector");
+		this.titleEl.setText('Live state inspector');
 
 		const { contentEl } = this;
 		contentEl.empty();
@@ -39,8 +55,7 @@ export class StateInspectorModal extends Modal {
 				.setName(row.label)
 				.setDesc(formatRowSummary(this.context, row.key))
 				.addExtraButton((btn) => {
-					btn
-						.setIcon("copy")
+					btn.setIcon('copy')
 						.setTooltip(`Copy ${row.label.toLowerCase()}`)
 						.onClick(() => void this.copyField(row.key, row.label));
 				});
@@ -56,41 +71,49 @@ export class StateInspectorModal extends Modal {
 
 	private renderBlob(parent: HTMLElement): void {
 		const { content } = this.lib.ui.stackedRow(parent, {
-			name: "Full snapshot",
-			description: "Every field as one block. Edit before copying if you need to.",
+			name: 'Full snapshot',
+			description:
+				'Every field as one block. Edit before copying if you need to.',
 		});
-		const textarea = new TextAreaComponent(content).setValue(formatBlob(this.context));
-		textarea.inputEl.addClass("toolbox-state-inspector-blob");
+		const textarea = new TextAreaComponent(content).setValue(
+			formatBlob(this.context),
+		);
+		textarea.inputEl.addClass('toolbox-state-inspector-blob');
 	}
 
 	private renderButtons(parent: HTMLElement): void {
-		const row = parent.createDiv({ cls: "toolbox-issue-buttons" });
+		const row = parent.createDiv({ cls: 'toolbox-issue-buttons' });
 
 		new ButtonComponent(row)
-			.setButtonText("Close")
+			.setButtonText('Close')
 			.onClick(() => this.close());
 
 		new ButtonComponent(row)
-			.setButtonText("Copy all")
+			.setButtonText('Copy all')
 			.setCta()
 			.onClick(() => void this.copyAll());
 	}
 
-	private async copyField(key: keyof CapturedContext, label: string): Promise<void> {
+	private async copyField(
+		key: keyof CapturedContext,
+		label: string,
+	): Promise<void> {
 		try {
-			await this.lib.clipboard.writeText(formatFieldValue(this.context, key));
+			await this.lib.clipboard.writeText(
+				formatFieldValue(this.context, key),
+			);
 			new Notice(`Copied ${label.toLowerCase()}.`, 2000);
 		} catch (e) {
-			new Notice("Copy failed: " + (e as Error).message, 6000);
+			new Notice('Copy failed: ' + (e as Error).message, 6000);
 		}
 	}
 
 	private async copyAll(): Promise<void> {
 		try {
 			await this.lib.clipboard.writeText(formatBlob(this.context));
-			new Notice("Copied live state snapshot.", 2000);
+			new Notice('Copied live state snapshot.', 2000);
 		} catch (e) {
-			new Notice("Copy failed: " + (e as Error).message, 6000);
+			new Notice('Copy failed: ' + (e as Error).message, 6000);
 		}
 	}
 }

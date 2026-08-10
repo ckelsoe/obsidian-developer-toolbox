@@ -8,8 +8,8 @@ export interface DiagnosticsSettings {
 
 export const DEFAULT_DIAGNOSTICS_SETTINGS: DiagnosticsSettings = {
 	enabled: true,
-	logSubfolder: "dev-diagnostics",
+	logSubfolder: 'dev-diagnostics',
 	logSessionStart: true,
 };
 
-export const DIAGNOSTICS_LOG_FILENAME = "diagnostics-log.md";
+export const DIAGNOSTICS_LOG_FILENAME = 'diagnostics-log.md';

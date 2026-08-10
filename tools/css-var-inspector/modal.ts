@@ -1,10 +1,13 @@
-import { App, ButtonComponent, Modal, Notice, SearchComponent } from "obsidian";
-import type { ToolboxLib } from "../../lib/types";
-import type DeveloperToolboxPlugin from "../../main";
-import { createVirtualList, type VirtualListController } from "../../lib/ui/virtual-list";
-import { collectCssVars } from "./collect";
-import { filterCssVars, formatBlob, formatVarLine } from "./format";
-import type { CssVar } from "./types";
+import { App, ButtonComponent, Modal, Notice, SearchComponent } from 'obsidian';
+import type { ToolboxLib } from '../../lib/types';
+import type DeveloperToolboxPlugin from '../../main';
+import {
+	createVirtualList,
+	type VirtualListController,
+} from '../../lib/ui/virtual-list';
+import { collectCssVars } from './collect';
+import { filterCssVars, formatBlob, formatVarLine } from './format';
+import type { CssVar } from './types';
 
 interface CssVarInspectorOpts {
 	lib: ToolboxLib;
@@ -26,7 +29,11 @@ export class CssVarInspectorModal extends Modal {
 	private matches: CssVar[] = [];
 	private vlist: VirtualListController | null = null;
 
-	constructor(app: App, _plugin: DeveloperToolboxPlugin, opts: CssVarInspectorOpts) {
+	constructor(
+		app: App,
+		_plugin: DeveloperToolboxPlugin,
+		opts: CssVarInspectorOpts,
+	) {
 		super(app);
 		this.lib = opts.lib;
 		// Collect once on open (the scan is O(rules); do not repeat per keystroke).
@@ -34,19 +41,19 @@ export class CssVarInspectorModal extends Modal {
 	}
 
 	onOpen(): void {
-		this.modalEl.addClass("toolbox-inspector-dialog");
-		this.titleEl.setText("CSS variable inspector");
+		this.modalEl.addClass('toolbox-inspector-dialog');
+		this.titleEl.setText('CSS variable inspector');
 
 		const { contentEl } = this;
 		contentEl.empty();
 
 		const search = new SearchComponent(contentEl);
-		search.setPlaceholder("Search variables by name or value");
-		search.inputEl.addClass("toolbox-cssvar-search");
+		search.setPlaceholder('Search variables by name or value');
+		search.inputEl.addClass('toolbox-cssvar-search');
 		search.onChange((value) => this.renderList(value));
 
-		this.countEl = contentEl.createDiv({ cls: "toolbox-cssvar-count" });
-		const listEl = contentEl.createDiv({ cls: "toolbox-cssvar-list" });
+		this.countEl = contentEl.createDiv({ cls: 'toolbox-cssvar-count' });
+		const listEl = contentEl.createDiv({ cls: 'toolbox-cssvar-list' });
 
 		this.vlist = createVirtualList({
 			scrollEl: listEl,
@@ -55,7 +62,7 @@ export class CssVarInspectorModal extends Modal {
 		});
 
 		this.renderButtons(contentEl);
-		this.renderList("");
+		this.renderList('');
 	}
 
 	onClose(): void {
@@ -73,26 +80,26 @@ export class CssVarInspectorModal extends Modal {
 	private renderRow(index: number, rowEl: HTMLElement): void {
 		const v = this.matches[index];
 		if (!v) return;
-		rowEl.addClass("toolbox-cssvar-row");
-		rowEl.setAttribute("aria-label", `Copy ${v.name}`);
-		rowEl.setAttribute("title", formatVarLine(v));
-		rowEl.createSpan({ cls: "toolbox-cssvar-name", text: v.name });
+		rowEl.addClass('toolbox-cssvar-row');
+		rowEl.setAttribute('aria-label', `Copy ${v.name}`);
+		rowEl.setAttribute('title', formatVarLine(v));
+		rowEl.createSpan({ cls: 'toolbox-cssvar-name', text: v.name });
 		rowEl.createSpan({
-			cls: "toolbox-cssvar-value",
-			text: v.value || "(unset in current theme)",
+			cls: 'toolbox-cssvar-value',
+			text: v.value || '(unset in current theme)',
 		});
-		rowEl.addEventListener("click", () => void this.copyLine(v));
+		rowEl.addEventListener('click', () => void this.copyLine(v));
 	}
 
 	private renderButtons(parent: HTMLElement): void {
-		const row = parent.createDiv({ cls: "toolbox-issue-buttons" });
+		const row = parent.createDiv({ cls: 'toolbox-issue-buttons' });
 
 		new ButtonComponent(row)
-			.setButtonText("Close")
+			.setButtonText('Close')
 			.onClick(() => this.close());
 
 		new ButtonComponent(row)
-			.setButtonText("Copy all")
+			.setButtonText('Copy all')
 			.setCta()
 			.onClick(() => void this.copyAll());
 	}
@@ -102,7 +109,7 @@ export class CssVarInspectorModal extends Modal {
 			await this.lib.clipboard.writeText(formatVarLine(v));
 			new Notice(`Copied ${v.name}.`, 2000);
 		} catch (e) {
-			new Notice("Copy failed: " + (e as Error).message, 6000);
+			new Notice('Copy failed: ' + (e as Error).message, 6000);
 		}
 	}
 
@@ -111,7 +118,7 @@ export class CssVarInspectorModal extends Modal {
 			await this.lib.clipboard.writeText(formatBlob(this.matches));
 			new Notice(`Copied ${this.matches.length} variables.`, 2000);
 		} catch (e) {
-			new Notice("Copy failed: " + (e as Error).message, 6000);
+			new Notice('Copy failed: ' + (e as Error).message, 6000);
 		}
 	}
 }

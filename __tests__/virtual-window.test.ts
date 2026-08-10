@@ -1,7 +1,7 @@
-import { computeVirtualWindow } from "../lib/ui/virtual-window";
+import { computeVirtualWindow } from '../lib/ui/virtual-window';
 
-describe("computeVirtualWindow", () => {
-	test("renders only the viewport plus overscan, not the whole list", () => {
+describe('computeVirtualWindow', () => {
+	test('renders only the viewport plus overscan, not the whole list', () => {
 		// 1000 rows of 30px, 300px viewport scrolled to the top. Visible rows are
 		// 0..9; with the default overscan of 4 the window is 0..13.
 		const win = computeVirtualWindow({
@@ -16,7 +16,7 @@ describe("computeVirtualWindow", () => {
 		expect(win.totalHeight).toBe(30000);
 	});
 
-	test("offsets the window and padTop when scrolled into the middle", () => {
+	test('offsets the window and padTop when scrolled into the middle', () => {
 		// Scrolled 3000px: first visible row is 100, last visible is 109. Overscan 4
 		// widens to 96..113, and padTop aligns to the first rendered row.
 		const win = computeVirtualWindow({
@@ -30,7 +30,7 @@ describe("computeVirtualWindow", () => {
 		expect(win.padTop).toBe(96 * 30);
 	});
 
-	test("clamps the last row to the end of the list", () => {
+	test('clamps the last row to the end of the list', () => {
 		const win = computeVirtualWindow({
 			scrollTop: 29700,
 			viewportHeight: 300,
@@ -40,7 +40,7 @@ describe("computeVirtualWindow", () => {
 		expect(win.lastRow).toBe(999);
 	});
 
-	test("returns an empty window when there are no rows", () => {
+	test('returns an empty window when there are no rows', () => {
 		const win = computeVirtualWindow({
 			scrollTop: 0,
 			viewportHeight: 300,
@@ -51,7 +51,7 @@ describe("computeVirtualWindow", () => {
 		expect(win.totalHeight).toBe(0);
 	});
 
-	test("returns an empty window when the viewport is not yet measured", () => {
+	test('returns an empty window when the viewport is not yet measured', () => {
 		const win = computeVirtualWindow({
 			scrollTop: 0,
 			viewportHeight: 0,
@@ -63,7 +63,7 @@ describe("computeVirtualWindow", () => {
 		expect(win.totalHeight).toBe(30000);
 	});
 
-	test("treats a negative scrollTop (overscroll) as the top", () => {
+	test('treats a negative scrollTop (overscroll) as the top', () => {
 		const win = computeVirtualWindow({
 			scrollTop: -50,
 			viewportHeight: 300,

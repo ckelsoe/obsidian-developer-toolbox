@@ -33,7 +33,7 @@ export function deriveOwning(
 	id: string,
 	manifests: Record<string, ManifestLike>,
 ): { owningPlugin: string; action: string } {
-	const idx = id.indexOf(":");
+	const idx = id.indexOf(':');
 	const prefix = idx === -1 ? id : id.slice(0, idx);
 	const action = idx === -1 ? id : id.slice(idx + 1);
 	const owningPlugin = manifests[prefix]?.name ?? prefix;
@@ -43,7 +43,7 @@ export function deriveOwning(
 // "Mod+Shift+P" style. Modifiers are kept verbatim (including the platform-neutral
 // "Mod") so the displayed binding matches what Obsidian stores.
 export function formatHotkey(h: HotkeyLike): string {
-	return [...h.modifiers, h.key].join("+");
+	return [...h.modifiers, h.key].join('+');
 }
 
 // Effective binding precedence: a user override wins (even an explicit empty
@@ -71,13 +71,21 @@ export function buildCommandRows(
 		const command = commands[id];
 		if (!command) continue;
 		const { owningPlugin, action } = deriveOwning(id, manifests);
-		const hotkeys = effectiveHotkeys(id, command, customKeys, defaultKeys).map(formatHotkey);
+		const hotkeys = effectiveHotkeys(
+			id,
+			command,
+			customKeys,
+			defaultKeys,
+		).map(formatHotkey);
 		rows.push({ id, owningPlugin, action, hotkeys });
 	}
 	return rows.sort((a, b) => a.id.localeCompare(b.id));
 }
 
-export function filterCommands(rows: CommandRow[], query: string): CommandRow[] {
+export function filterCommands(
+	rows: CommandRow[],
+	query: string,
+): CommandRow[] {
 	const q = query.trim().toLowerCase();
 	if (!q) return rows;
 	return rows.filter(
@@ -91,10 +99,10 @@ export function filterCommands(rows: CommandRow[], query: string): CommandRow[] 
 // Tab-separated row for the copy-all blob: id, owning plugin, hotkeys (or a marker
 // when unbound).
 export function formatRow(r: CommandRow): string {
-	const hk = r.hotkeys.length ? r.hotkeys.join(", ") : "no hotkey";
+	const hk = r.hotkeys.length ? r.hotkeys.join(', ') : 'no hotkey';
 	return `${r.id}\t${r.owningPlugin}\t${hk}`;
 }
 
 export function formatBlob(rows: CommandRow[]): string {
-	return rows.map(formatRow).join("\n");
+	return rows.map(formatRow).join('\n');
 }

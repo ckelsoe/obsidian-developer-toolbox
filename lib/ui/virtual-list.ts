@@ -1,4 +1,4 @@
-import { computeVirtualWindow } from "./virtual-window";
+import { computeVirtualWindow } from './virtual-window';
 
 // Fixed-height virtual list. Renders only the rows in (or near) the viewport so a
 // list of thousands stays at a small, constant DOM node count and the cap that
@@ -29,14 +29,16 @@ export interface VirtualListOptions {
 	overscan?: number;
 }
 
-export function createVirtualList(opts: VirtualListOptions): VirtualListController {
+export function createVirtualList(
+	opts: VirtualListOptions,
+): VirtualListController {
 	const { scrollEl, rowHeight, renderRow } = opts;
 	const overscan = opts.overscan ?? 4;
 
 	// sizer reserves the full scroll range; rowsEl is the translated slice that
 	// holds the handful of rendered rows.
-	const sizer = scrollEl.createDiv({ cls: "toolbox-vlist-sizer" });
-	const rowsEl = sizer.createDiv({ cls: "toolbox-vlist-rows" });
+	const sizer = scrollEl.createDiv({ cls: 'toolbox-vlist-sizer' });
+	const rowsEl = sizer.createDiv({ cls: 'toolbox-vlist-rows' });
 
 	let rowCount = 0;
 
@@ -54,14 +56,14 @@ export function createVirtualList(opts: VirtualListOptions): VirtualListControll
 		rowsEl.empty();
 
 		for (let i = win.firstRow; i <= win.lastRow; i++) {
-			const rowEl = rowsEl.createDiv({ cls: "toolbox-vlist-row" });
+			const rowEl = rowsEl.createDiv({ cls: 'toolbox-vlist-row' });
 			rowEl.style.height = `${rowHeight}px`;
 			renderRow(i, rowEl);
 		}
 	};
 
 	const onScroll = (): void => render();
-	scrollEl.addEventListener("scroll", onScroll, { passive: true });
+	scrollEl.addEventListener('scroll', onScroll, { passive: true });
 
 	const scheduleMeasuredRefresh = (): void => {
 		// A modal often opens with clientHeight 0 (not yet painted), which yields an
@@ -79,7 +81,7 @@ export function createVirtualList(opts: VirtualListOptions): VirtualListControll
 		},
 		refresh: render,
 		destroy: (): void => {
-			scrollEl.removeEventListener("scroll", onScroll);
+			scrollEl.removeEventListener('scroll', onScroll);
 			sizer.remove();
 		},
 	};

@@ -1,11 +1,13 @@
-import type { DiagnosticsBus, DiagnosticsEntry } from "./types";
+import type { DiagnosticsBus, DiagnosticsEntry } from './types';
 
 // Normalize the optional body into the stored markdown. undefined drops to null,
 // a string passes through verbatim, an object becomes a fenced JSON block.
-export function formatBody(body: string | Record<string, unknown> | undefined): string | null {
+export function formatBody(
+	body: string | Record<string, unknown> | undefined,
+): string | null {
 	if (body === undefined) return null;
-	if (typeof body === "string") return body;
-	return "```json\n" + JSON.stringify(body, null, 2) + "\n```";
+	if (typeof body === 'string') return body;
+	return '```json\n' + JSON.stringify(body, null, 2) + '\n```';
 }
 
 // Render an error defensively. Real Error objects use name + message + stack;
@@ -18,7 +20,7 @@ export function formatError(error: unknown): string {
 	} else {
 		text = String(error);
 	}
-	return "```\n" + text + "\n```";
+	return '```\n' + text + '\n```';
 }
 
 // Singleton bus built once at onload. It closes over a single sink reference.
@@ -27,10 +29,10 @@ export function formatError(error: unknown): string {
 export function buildDiagnosticsBus(): DiagnosticsBus {
 	let sink: ((entry: DiagnosticsEntry) => void) | null = null;
 
-	const append: DiagnosticsBus["append"] = (label, opts = {}) => {
+	const append: DiagnosticsBus['append'] = (label, opts = {}) => {
 		const entry: DiagnosticsEntry = {
 			label,
-			status: opts.status ?? "ok",
+			status: opts.status ?? 'ok',
 			elapsedMs: opts.elapsedMs ?? null,
 			timestamp: new Date().toISOString(),
 			body: formatBody(opts.body),
@@ -41,7 +43,11 @@ export function buildDiagnosticsBus(): DiagnosticsBus {
 	return {
 		append,
 		appendError: (label, error, opts = {}): void => {
-			append(label, { status: "error", elapsedMs: opts.elapsedMs, body: formatError(error) });
+			append(label, {
+				status: 'error',
+				elapsedMs: opts.elapsedMs,
+				body: formatError(error),
+			});
 		},
 		attachSink: (next): (() => void) => {
 			sink = next;

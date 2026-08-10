@@ -1,14 +1,14 @@
-import { Notice } from "obsidian";
-import type { ToolContext } from "../types";
-import type { ReloaderSettings } from "./types";
-import { PluginReloadWatcher } from "./watcher";
-import { reloadPlugin, reloadedLabel, type ReloadResult } from "./reload";
-import { readPluginVersionFromDisk } from "../../lib/manifest-version";
-import { ReloadLog } from "./log";
+import { Notice } from 'obsidian';
+import type { ToolContext } from '../types';
+import type { ReloaderSettings } from './types';
+import { PluginReloadWatcher } from './watcher';
+import { reloadPlugin, reloadedLabel, type ReloadResult } from './reload';
+import { readPluginVersionFromDisk } from '../../lib/manifest-version';
+import { ReloadLog } from './log';
 
 type Ctx = ToolContext<ReloaderSettings>;
 
-type ReloadState = "ready" | "dirty" | "done";
+type ReloadState = 'ready' | 'dirty' | 'done';
 
 function nowHms(): string {
 	const d = new Date();
@@ -29,10 +29,10 @@ export class ReloaderController {
 	// late-firing arm callback does not build a watcher after teardown.
 	private armTimer: number | null = null;
 	private disposed = false;
-	private state: ReloadState = "ready";
+	private state: ReloadState = 'ready';
 	// The running toolbox build's version, read from disk so it stays accurate
 	// across a live self-reload. Shown persistently in the status bar.
-	private version = "";
+	private version = '';
 	// When this controller instance loaded. Updates on every self-reload, so the
 	// status bar confirms a reload happened even when the version did not change.
 	private readonly loadedAt = nowHms();
@@ -48,13 +48,16 @@ export class ReloaderController {
 
 	attachStatusBar(el: HTMLElement): void {
 		this.statusEl = el;
-		el.addClass("toolbox-reloader-status");
-		this.setState("ready");
+		el.addClass('toolbox-reloader-status');
+		this.setState('ready');
 		void this.refreshVersion();
 	}
 
 	private async refreshVersion(): Promise<void> {
-		const v = await readPluginVersionFromDisk(this.ctx.app, this.ctx.plugin.manifest.id);
+		const v = await readPluginVersionFromDisk(
+			this.ctx.app,
+			this.ctx.plugin.manifest.id,
+		);
 		this.version = v ?? this.ctx.plugin.manifest.version;
 		this.renderStatus();
 	}
@@ -69,12 +72,15 @@ export class ReloaderController {
 		}
 		for (const el of [this.iconEl, this.statusEl]) {
 			if (!el) continue;
-			el.toggleClass("toolbox-reloader-dirty", state === "dirty");
-			el.toggleClass("toolbox-reloader-done", state === "done");
+			el.toggleClass('toolbox-reloader-dirty', state === 'dirty');
+			el.toggleClass('toolbox-reloader-done', state === 'done');
 		}
 		this.renderStatus();
-		if (state === "done") {
-			this.doneTimer = window.setTimeout(() => this.setState("ready"), 2200);
+		if (state === 'done') {
+			this.doneTimer = window.setTimeout(
+				() => this.setState('ready'),
+				2200,
+			);
 		}
 	}
 
@@ -85,12 +91,12 @@ export class ReloaderController {
 	private renderStatus(): void {
 		if (!this.statusEl) return;
 		let text: string;
-		if (this.state === "dirty") {
-			text = "↻ reload needed";
-		} else if (this.state === "done") {
-			text = "↻ reloaded ✓";
+		if (this.state === 'dirty') {
+			text = '↻ reload needed';
+		} else if (this.state === 'done') {
+			text = '↻ reloaded ✓';
 		} else {
-			const ver = this.version ? `v${this.version}` : "loaded";
+			const ver = this.version ? `v${this.version}` : 'loaded';
 			text = `↻ ${ver} · ${this.loadedAt}`;
 		}
 		this.statusEl.setText(text);
@@ -163,14 +169,17 @@ export class ReloaderController {
 	async reloadById(id: string): Promise<void> {
 		const result = await reloadPlugin(this.ctx.app, id);
 		this.notify(result);
-		if (result.ok) this.setState("done");
+		if (result.ok) this.setState('done');
 	}
 
 	// Manual reload of all configured dev plugins (the ribbon-click path).
 	async reloadDevPlugins(): Promise<void> {
 		const ids = this.ctx.settings.devPluginIds;
 		if (!ids.length) {
-			new Notice("No dev plugins configured. Add some in the settings tab.", 5000);
+			new Notice(
+				'No dev plugins configured. Add some in the settings tab.',
+				5000,
+			);
 			return;
 		}
 		const ok: string[] = [];
@@ -181,11 +190,11 @@ export class ReloaderController {
 			else failed.push(result.name);
 		}
 		const parts: string[] = [];
-		if (ok.length) parts.push(`Reloaded: ${ok.join(", ")}`);
-		if (failed.length) parts.push(`Failed: ${failed.join(", ")}`);
-		new Notice(parts.join(" | "), failed.length ? 8000 : 3000);
-		this.log.append(`manual reload — ${parts.join(" | ")}`);
-		if (ok.length) this.setState("done");
+		if (ok.length) parts.push(`Reloaded: ${ok.join(', ')}`);
+		if (failed.length) parts.push(`Failed: ${failed.join(', ')}`);
+		new Notice(parts.join(' | '), failed.length ? 8000 : 3000);
+		this.log.append(`manual reload — ${parts.join(' | ')}`);
+		if (ok.length) this.setState('done');
 	}
 
 	// A watched file changed. Auto-reload setting decides the outcome.
@@ -193,12 +202,12 @@ export class ReloaderController {
 		if (this.ctx.settings.autoWatch) {
 			const result = await reloadPlugin(this.ctx.app, id);
 			this.notify(result);
-			if (result.ok) this.setState("done");
+			if (result.ok) this.setState('done');
 		} else {
 			const name = this.ctx.app.plugins.manifests[id]?.name ?? id;
 			this.diag(`${name} changed, needs reload.`);
 			this.log.append(`flagged reload needed: ${name}`);
-			this.setState("dirty");
+			this.setState('dirty');
 		}
 	}
 
@@ -207,7 +216,10 @@ export class ReloaderController {
 			this.diag(`Reloaded ${reloadedLabel(result)}.`);
 			this.log.append(`reloaded ${reloadedLabel(result)}`);
 		} else {
-			this.diag(`Reload failed for ${result.name}: ${result.error}`, true);
+			this.diag(
+				`Reload failed for ${result.name}: ${result.error}`,
+				true,
+			);
 			this.log.append(`reload failed: ${result.name}: ${result.error}`);
 		}
 	}

@@ -1,15 +1,20 @@
 // A drawable annotation kind. "select" is a tool MODE, not a drawable kind, so
 // it lives in ToolMode below rather than here.
-export type AnnotationKind = "pen" | "box" | "arrow" | "blackout" | "text" | "highlight";
+type AnnotationKind =
+	'pen' | 'box' | 'arrow' | 'blackout' | 'text' | 'highlight';
 
 // What the toolbar can put the stage into. Every AnnotationKind plus the
 // non-drawing "select" mode that drives move/resize/rotate.
-export type ToolMode = AnnotationKind | "select";
+export type ToolMode = AnnotationKind | 'select';
 
-export const STROKE_WIDTHS: readonly { id: "thin" | "medium" | "thick"; px: number; label: string }[] = [
-	{ id: "thin", px: 2, label: "Thin" },
-	{ id: "medium", px: 4, label: "Medium" },
-	{ id: "thick", px: 7, label: "Thick" },
+export const STROKE_WIDTHS: readonly {
+	id: 'thin' | 'medium' | 'thick';
+	px: number;
+	label: string;
+}[] = [
+	{ id: 'thin', px: 2, label: 'Thin' },
+	{ id: 'medium', px: 4, label: 'Medium' },
+	{ id: 'thick', px: 7, label: 'Thick' },
 ];
 
 export interface BasePalette {
@@ -17,15 +22,15 @@ export interface BasePalette {
 	strokeWidth: number;
 }
 
-export interface PenAnnotation {
-	kind: "pen";
+interface PenAnnotation {
+	kind: 'pen';
 	points: number[];
 	color: string;
 	strokeWidth: number;
 }
 
-export interface BoxAnnotation {
-	kind: "box";
+interface BoxAnnotation {
+	kind: 'box';
 	x: number;
 	y: number;
 	width: number;
@@ -36,8 +41,8 @@ export interface BoxAnnotation {
 	rotation?: number;
 }
 
-export interface ArrowAnnotation {
-	kind: "arrow";
+interface ArrowAnnotation {
+	kind: 'arrow';
 	x1: number;
 	y1: number;
 	x2: number;
@@ -46,8 +51,8 @@ export interface ArrowAnnotation {
 	strokeWidth: number;
 }
 
-export interface BlackoutAnnotation {
-	kind: "blackout";
+interface BlackoutAnnotation {
+	kind: 'blackout';
 	x: number;
 	y: number;
 	width: number;
@@ -55,8 +60,8 @@ export interface BlackoutAnnotation {
 	rotation?: number;
 }
 
-export interface HighlightAnnotation {
-	kind: "highlight";
+interface HighlightAnnotation {
+	kind: 'highlight';
 	x: number;
 	y: number;
 	width: number;
@@ -66,7 +71,7 @@ export interface HighlightAnnotation {
 }
 
 export interface TextAnnotation {
-	kind: "text";
+	kind: 'text';
 	x: number;
 	y: number;
 	text: string;
@@ -97,10 +102,19 @@ export interface SerializedAnnotations {
 	annotations: Annotation[];
 }
 
-export const PALETTE: readonly string[] = ["#ef4444", "#f97316", "#eab308", "#22c55e", "#3b82f6", "#a855f7", "#ffffff", "#000000"];
+export const PALETTE: readonly string[] = [
+	'#ef4444',
+	'#f97316',
+	'#eab308',
+	'#22c55e',
+	'#3b82f6',
+	'#a855f7',
+	'#ffffff',
+	'#000000',
+];
 
 export const DEFAULT_PALETTE: BasePalette = {
-	color: "#ef4444",
+	color: '#ef4444',
 	strokeWidth: 4,
 };
 

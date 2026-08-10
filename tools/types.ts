@@ -1,6 +1,6 @@
-import type { App } from "obsidian";
-import type DeveloperToolboxPlugin from "../main";
-import type { ToolboxLib } from "../lib/types";
+import type { App } from 'obsidian';
+import type DeveloperToolboxPlugin from '../main';
+import type { ToolboxLib } from '../lib/types';
 
 export interface Disposable {
 	dispose(): void;
@@ -14,7 +14,9 @@ export interface ToolContext<TSettings = unknown> {
 	saveSettings: () => Promise<void>;
 }
 
-export interface ToolHandle<TSettings extends { enabled: boolean } = { enabled: boolean }> {
+export interface ToolHandle<
+	TSettings extends { enabled: boolean } = { enabled: boolean },
+> {
 	id: string;
 	displayName: string;
 	defaultSettings: TSettings;

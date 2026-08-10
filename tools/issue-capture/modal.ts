@@ -1,13 +1,27 @@
-import { App, ButtonComponent, DropdownComponent, Modal, Notice, Setting, TextAreaComponent, setIcon } from "obsidian";
-import type { ToolboxLib, CapturedContext } from "../../lib/types";
-import type DeveloperToolboxPlugin from "../../main";
-import { AnnotationStage } from "./annotation/stage";
-import type { SerializedAnnotations, ToolMode } from "./annotation/types";
-import { PALETTE, STROKE_WIDTHS } from "./annotation/types";
-import type { CapturedImage } from "./capture";
-import { buildPayload, buildIssueDocument } from "./payload";
-import { saveSettings } from "../../settings";
-import { ISSUE_TYPES, type AnnotationDraft, type IssueCaptureSettings, type IssueType } from "./types";
+import {
+	App,
+	ButtonComponent,
+	DropdownComponent,
+	Modal,
+	Notice,
+	Setting,
+	TextAreaComponent,
+	setIcon,
+} from 'obsidian';
+import type { ToolboxLib, CapturedContext } from '../../lib/types';
+import type DeveloperToolboxPlugin from '../../main';
+import { AnnotationStage } from './annotation/stage';
+import type { SerializedAnnotations, ToolMode } from './annotation/types';
+import { PALETTE, STROKE_WIDTHS } from './annotation/types';
+import type { CapturedImage } from './capture';
+import { buildPayload, buildIssueDocument } from './payload';
+import { saveSettings } from '../../settings';
+import {
+	ISSUE_TYPES,
+	type AnnotationDraft,
+	type IssueCaptureSettings,
+	type IssueType,
+} from './types';
 
 interface IssueDialogOpts {
 	capturedImage: CapturedImage | null;
@@ -27,7 +41,7 @@ export class IssueDialog extends Modal {
 	private toolboxPlugin: DeveloperToolboxPlugin;
 
 	private issueType: IssueType;
-	private description = "";
+	private description = '';
 	private payloadEdited = false;
 	private payloadTextarea: TextAreaComponent | null = null;
 	private savedImagePath: string | null = null;
@@ -42,7 +56,11 @@ export class IssueDialog extends Modal {
 	// on close.
 	private copied = false;
 
-	constructor(app: App, plugin: DeveloperToolboxPlugin, opts: IssueDialogOpts) {
+	constructor(
+		app: App,
+		plugin: DeveloperToolboxPlugin,
+		opts: IssueDialogOpts,
+	) {
 		super(app);
 		this.toolboxPlugin = plugin;
 		this.capturedImage = opts.capturedImage;
@@ -54,8 +72,8 @@ export class IssueDialog extends Modal {
 	}
 
 	onOpen(): void {
-		this.modalEl.addClass("toolbox-issue-dialog");
-		this.titleEl.setText("Issue capture");
+		this.modalEl.addClass('toolbox-issue-dialog');
+		this.titleEl.setText('Issue capture');
 
 		const { contentEl } = this;
 		contentEl.empty();
@@ -103,24 +121,37 @@ export class IssueDialog extends Modal {
 
 	private async captureSourceDataUrl(): Promise<void> {
 		if (!this.capturedImage) return;
-		this.sourceImageDataUrl = await blobToDataUrl(this.capturedImage.pngBlob);
+		this.sourceImageDataUrl = await blobToDataUrl(
+			this.capturedImage.pngBlob,
+		);
 	}
 
 	private renderScreenshotPreview(parent: HTMLElement): void {
 		const { content } = this.lib.ui.stackedRow(parent, {
-			name: "Screenshot",
-			description: "Draw on the image. Use blackout to redact PII before copying.",
+			name: 'Screenshot',
+			description:
+				'Draw on the image. Use blackout to redact PII before copying.',
 		});
 
-		const toolbar = content.createDiv({ cls: "toolbox-annotation-toolbar" });
-		const canvasHolder = content.createDiv({ cls: "toolbox-annotation-stage" });
+		const toolbar = content.createDiv({
+			cls: 'toolbox-annotation-toolbar',
+		});
+		const canvasHolder = content.createDiv({
+			cls: 'toolbox-annotation-stage',
+		});
 
-		const img = activeWindow.createEl("img");
+		const img = activeWindow.createEl('img');
 		const url = URL.createObjectURL(this.capturedImage!.pngBlob);
 		img.onload = (): void => {
 			URL.revokeObjectURL(url);
-			this.annotationStage = new AnnotationStage(canvasHolder, img, this.restoreState ?? undefined);
-			this.annotationStage.onSelectionChange(() => this.refreshDeleteButton());
+			this.annotationStage = new AnnotationStage(
+				canvasHolder,
+				img,
+				this.restoreState ?? undefined,
+			);
+			this.annotationStage.onSelectionChange(() =>
+				this.refreshDeleteButton(),
+			);
 			this.renderAnnotationToolbar(toolbar);
 			// Snapshot the unflattened source for draft persistence (D3).
 			void this.captureSourceDataUrl();
@@ -132,61 +163,97 @@ export class IssueDialog extends Modal {
 		parent.empty();
 
 		const tools: { id: ToolMode; icon: string; label: string }[] = [
-			{ id: "select", icon: "mouse-pointer-2", label: "Select (move, resize, rotate)" },
-			{ id: "pen", icon: "pencil", label: "Pen" },
-			{ id: "box", icon: "square", label: "Box" },
-			{ id: "arrow", icon: "arrow-up-right", label: "Arrow" },
-			{ id: "highlight", icon: "highlighter", label: "Highlight" },
-			{ id: "text", icon: "type", label: "Text" },
-			{ id: "blackout", icon: "eye-off", label: "Blackout (PII)" },
+			{
+				id: 'select',
+				icon: 'mouse-pointer-2',
+				label: 'Select (move, resize, rotate)',
+			},
+			{ id: 'pen', icon: 'pencil', label: 'Pen' },
+			{ id: 'box', icon: 'square', label: 'Box' },
+			{ id: 'arrow', icon: 'arrow-up-right', label: 'Arrow' },
+			{ id: 'highlight', icon: 'highlighter', label: 'Highlight' },
+			{ id: 'text', icon: 'type', label: 'Text' },
+			{ id: 'blackout', icon: 'eye-off', label: 'Blackout (PII)' },
 		];
 
 		for (const tool of tools) {
-			const btn = parent.createEl("button", { cls: "toolbox-annotation-tool", attr: { "aria-label": tool.label, type: "button", "data-tool": tool.id } });
+			const btn = parent.createEl('button', {
+				cls: 'toolbox-annotation-tool',
+				attr: {
+					'aria-label': tool.label,
+					type: 'button',
+					'data-tool': tool.id,
+				},
+			});
 			setIcon(btn, tool.icon);
-			btn.addEventListener("click", () => {
+			btn.addEventListener('click', () => {
 				this.annotationStage?.setTool(tool.id);
 				this.refreshToolbarActive(parent);
 			});
 		}
 
-		const widthGroup = parent.createDiv({ cls: "toolbox-annotation-widths" });
+		const widthGroup = parent.createDiv({
+			cls: 'toolbox-annotation-widths',
+		});
 		for (const width of STROKE_WIDTHS) {
-			const btn = widthGroup.createEl("button", {
-				cls: "toolbox-annotation-width",
-				attr: { "aria-label": `${width.label} stroke`, type: "button", "data-width": width.id, title: `${width.label} (${width.px}px)` },
+			const btn = widthGroup.createEl('button', {
+				cls: 'toolbox-annotation-width',
+				attr: {
+					'aria-label': `${width.label} stroke`,
+					type: 'button',
+					'data-width': width.id,
+					title: `${width.label} (${width.px}px)`,
+				},
 			});
-			btn.createSpan({ cls: `toolbox-annotation-width-bar toolbox-annotation-width-bar-${width.id}` });
-			btn.addEventListener("click", () => {
+			btn.createSpan({
+				cls: `toolbox-annotation-width-bar toolbox-annotation-width-bar-${width.id}`,
+			});
+			btn.addEventListener('click', () => {
 				this.annotationStage?.setStrokeWidth(width.px);
 				this.refreshToolbarActive(parent);
 			});
 		}
 
-		const colorGroup = parent.createDiv({ cls: "toolbox-annotation-colors" });
+		const colorGroup = parent.createDiv({
+			cls: 'toolbox-annotation-colors',
+		});
 		for (const color of PALETTE) {
-			const swatch = colorGroup.createEl("button", {
-				cls: "toolbox-annotation-color",
-				attr: { "aria-label": `Color ${color}`, type: "button", "data-color": color },
+			const swatch = colorGroup.createEl('button', {
+				cls: 'toolbox-annotation-color',
+				attr: {
+					'aria-label': `Color ${color}`,
+					type: 'button',
+					'data-color': color,
+				},
 			});
-			swatch.addEventListener("click", () => {
+			swatch.addEventListener('click', () => {
 				this.annotationStage?.setPaletteColor(color);
 				this.refreshToolbarActive(parent);
 			});
 		}
 
-		const actions = parent.createDiv({ cls: "toolbox-annotation-actions" });
+		const actions = parent.createDiv({ cls: 'toolbox-annotation-actions' });
 
-		const lockBtn = actions.createEl("button", { cls: "toolbox-annotation-action", attr: { "aria-label": "Unlock blackouts to move them", type: "button" } });
+		const lockBtn = actions.createEl('button', {
+			cls: 'toolbox-annotation-action',
+			attr: {
+				'aria-label': 'Unlock blackouts to move them',
+				type: 'button',
+			},
+		});
 		const paintLock = (): void => {
-			const unlocked = this.annotationStage?.isBlackoutsUnlocked() ?? false;
+			const unlocked =
+				this.annotationStage?.isBlackoutsUnlocked() ?? false;
 			lockBtn.empty();
-			setIcon(lockBtn, unlocked ? "lock-open" : "lock");
-			lockBtn.toggleClass("is-active", unlocked);
-			lockBtn.setAttribute("aria-label", unlocked ? "Lock blackouts" : "Unlock blackouts to move them");
+			setIcon(lockBtn, unlocked ? 'lock-open' : 'lock');
+			lockBtn.toggleClass('is-active', unlocked);
+			lockBtn.setAttribute(
+				'aria-label',
+				unlocked ? 'Lock blackouts' : 'Unlock blackouts to move them',
+			);
 		};
 		paintLock();
-		lockBtn.addEventListener("click", () => {
+		lockBtn.addEventListener('click', () => {
 			const stage = this.annotationStage;
 			if (!stage) return;
 			stage.setBlackoutsUnlocked(!stage.isBlackoutsUnlocked());
@@ -194,32 +261,44 @@ export class IssueDialog extends Modal {
 			this.refreshToolbarActive(parent);
 		});
 
-		const deleteBtn = actions.createEl("button", { cls: "toolbox-annotation-action", attr: { "aria-label": "Delete selection", type: "button" } });
-		setIcon(deleteBtn, "eraser");
-		deleteBtn.addEventListener("click", () => {
+		const deleteBtn = actions.createEl('button', {
+			cls: 'toolbox-annotation-action',
+			attr: { 'aria-label': 'Delete selection', type: 'button' },
+		});
+		setIcon(deleteBtn, 'eraser');
+		deleteBtn.addEventListener('click', () => {
 			this.annotationStage?.deleteSelected();
 			this.refreshToolbarActive(parent);
 		});
 		this.deleteBtn = deleteBtn;
 		this.refreshDeleteButton();
 
-		const undoBtn = actions.createEl("button", { cls: "toolbox-annotation-action", attr: { "aria-label": "Undo", type: "button" } });
-		setIcon(undoBtn, "undo-2");
-		undoBtn.addEventListener("click", () => {
+		const undoBtn = actions.createEl('button', {
+			cls: 'toolbox-annotation-action',
+			attr: { 'aria-label': 'Undo', type: 'button' },
+		});
+		setIcon(undoBtn, 'undo-2');
+		undoBtn.addEventListener('click', () => {
 			this.annotationStage?.undo();
 			this.refreshToolbarActive(parent);
 		});
 
-		const redoBtn = actions.createEl("button", { cls: "toolbox-annotation-action", attr: { "aria-label": "Redo", type: "button" } });
-		setIcon(redoBtn, "redo-2");
-		redoBtn.addEventListener("click", () => {
+		const redoBtn = actions.createEl('button', {
+			cls: 'toolbox-annotation-action',
+			attr: { 'aria-label': 'Redo', type: 'button' },
+		});
+		setIcon(redoBtn, 'redo-2');
+		redoBtn.addEventListener('click', () => {
 			this.annotationStage?.redo();
 			this.refreshToolbarActive(parent);
 		});
 
-		const clearBtn = actions.createEl("button", { cls: "toolbox-annotation-action", attr: { "aria-label": "Clear all", type: "button" } });
-		setIcon(clearBtn, "trash-2");
-		clearBtn.addEventListener("click", () => {
+		const clearBtn = actions.createEl('button', {
+			cls: 'toolbox-annotation-action',
+			attr: { 'aria-label': 'Clear all', type: 'button' },
+		});
+		setIcon(clearBtn, 'trash-2');
+		clearBtn.addEventListener('click', () => {
 			this.annotationStage?.clearAll();
 			this.refreshToolbarActive(parent);
 		});
@@ -233,29 +312,43 @@ export class IssueDialog extends Modal {
 		const activeTool = stage.getCurrentTool();
 		const activeColor = stage.getPalette().color;
 		const activeWidth = stage.getPalette().strokeWidth;
-		const activeWidthId = STROKE_WIDTHS.find((w) => w.px === activeWidth)?.id ?? null;
-		toolbar.querySelectorAll<HTMLElement>(".toolbox-annotation-tool").forEach((btn) => {
-			btn.toggleClass("is-active", btn.dataset.tool === activeTool);
-		});
-		toolbar.querySelectorAll<HTMLElement>(".toolbox-annotation-color").forEach((btn) => {
-			btn.toggleClass("is-active", btn.dataset.color === activeColor);
-		});
-		toolbar.querySelectorAll<HTMLElement>(".toolbox-annotation-width").forEach((btn) => {
-			btn.toggleClass("is-active", btn.dataset.width === activeWidthId);
-		});
+		// Empty string (not null) so the type stays `string`, matching
+		// `dataset.width`; sonarjs flags a `string` vs string-literal-union
+		// comparison as always-false. No real width id is empty, so an empty
+		// active id highlights nothing, exactly like the previous null.
+		const activeWidthId =
+			STROKE_WIDTHS.find((w) => w.px === activeWidth)?.id ?? '';
+		toolbar
+			.querySelectorAll<HTMLElement>('.toolbox-annotation-tool')
+			.forEach((btn) => {
+				btn.toggleClass('is-active', btn.dataset.tool === activeTool);
+			});
+		toolbar
+			.querySelectorAll<HTMLElement>('.toolbox-annotation-color')
+			.forEach((btn) => {
+				btn.toggleClass('is-active', btn.dataset.color === activeColor);
+			});
+		toolbar
+			.querySelectorAll<HTMLElement>('.toolbox-annotation-width')
+			.forEach((btn) => {
+				btn.toggleClass(
+					'is-active',
+					btn.dataset.width === activeWidthId,
+				);
+			});
 		this.refreshDeleteButton();
 	}
 
 	private refreshDeleteButton(): void {
 		if (!this.deleteBtn) return;
 		const enabled = this.annotationStage?.hasSelection() ?? false;
-		this.deleteBtn.toggleClass("is-disabled", !enabled);
+		this.deleteBtn.toggleClass('is-disabled', !enabled);
 		this.deleteBtn.disabled = !enabled;
 	}
 
 	private renderTypeRow(parent: HTMLElement): void {
 		new Setting(parent)
-			.setName("Type")
+			.setName('Type')
 			.addDropdown((dropdown: DropdownComponent) => {
 				for (const t of ISSUE_TYPES) {
 					dropdown.addOption(t.id, t.label);
@@ -270,58 +363,72 @@ export class IssueDialog extends Modal {
 
 	private renderDescriptionRow(parent: HTMLElement): void {
 		const { content } = this.lib.ui.stackedRow(parent, {
-			name: "Description",
-			description: "Plain prose. Markdown is fine; whatever you paste later interprets it.",
+			name: 'Description',
+			description:
+				'Plain prose. Markdown is fine; whatever you paste later interprets it.',
 		});
 		new TextAreaComponent(content)
-			.setPlaceholder("Describe the issue, repro, or question.")
+			.setPlaceholder('Describe the issue, repro, or question.')
 			.onChange((value) => {
 				this.description = value;
 				this.regeneratePayload();
-			}).inputEl.addClass("toolbox-issue-description-textarea");
+			})
+			.inputEl.addClass('toolbox-issue-description-textarea');
 	}
 
 	private renderContextSummary(parent: HTMLElement): void {
-		const { content } = this.lib.ui.stackedRow(parent, { name: "Captured context" });
-		const list = content.createDiv({ cls: "toolbox-issue-context-list" });
-		list.createDiv({ text: `Obsidian ${this.context.obsidianVersion} / ${this.context.osFamily}${this.context.vaultName ? " / vault: " + this.context.vaultName : ""}` });
+		const { content } = this.lib.ui.stackedRow(parent, {
+			name: 'Captured context',
+		});
+		const list = content.createDiv({ cls: 'toolbox-issue-context-list' });
+		list.createDiv({
+			text: `Obsidian ${this.context.obsidianVersion} / ${this.context.osFamily}${this.context.vaultName ? ' / vault: ' + this.context.vaultName : ''}`,
+		});
 		if (this.context.activeFile) {
-			const mode = this.context.activeViewMode === "unknown" ? "" : ` (${this.context.activeViewMode})`;
-			list.createDiv({ text: `Active file: ${this.context.activeFile}${mode}` });
+			const mode =
+				this.context.activeViewMode === 'unknown'
+					? ''
+					: ` (${this.context.activeViewMode})`;
+			list.createDiv({
+				text: `Active file: ${this.context.activeFile}${mode}`,
+			});
 		}
 		if (this.context.enabledPluginIds) {
-			list.createDiv({ text: `Plugins enabled: ${this.context.enabledPluginIds.length}` });
+			list.createDiv({
+				text: `Plugins enabled: ${this.context.enabledPluginIds.length}`,
+			});
 		}
 	}
 
 	private renderPayloadPreview(parent: HTMLElement): void {
 		const { content } = this.lib.ui.stackedRow(parent, {
-			name: "Payload preview",
-			description: "These are the exact bytes that get copied. Edit freely.",
+			name: 'Payload preview',
+			description:
+				'These are the exact bytes that get copied. Edit freely.',
 		});
 		this.payloadTextarea = new TextAreaComponent(content)
 			.setValue(this.generatePayloadText(null))
 			.onChange(() => {
 				this.payloadEdited = true;
 			});
-		this.payloadTextarea.inputEl.addClass("toolbox-issue-payload-textarea");
+		this.payloadTextarea.inputEl.addClass('toolbox-issue-payload-textarea');
 	}
 
 	private renderButtons(parent: HTMLElement): void {
-		const row = parent.createDiv({ cls: "toolbox-issue-buttons" });
+		const row = parent.createDiv({ cls: 'toolbox-issue-buttons' });
 
 		if (this.capturedImage) {
 			new ButtonComponent(row)
-				.setButtonText("Copy path only")
+				.setButtonText('Copy path only')
 				.onClick(() => void this.handleCopyPathOnly());
 		}
 
 		new ButtonComponent(row)
-			.setButtonText("Cancel")
+			.setButtonText('Cancel')
 			.onClick(() => this.close());
 
 		new ButtonComponent(row)
-			.setButtonText("Copy")
+			.setButtonText('Copy')
 			.setCta()
 			.onClick(() => void this.handleCopy());
 	}
@@ -345,7 +452,9 @@ export class IssueDialog extends Modal {
 	private async ensureScreenshotSaved(): Promise<string | null> {
 		if (!this.capturedImage) return null;
 		if (this.savedImagePath) return this.savedImagePath;
-		const folder = this.lib.storage.resolve(this.settings.screenshotSubfolder);
+		const folder = this.lib.storage.resolve(
+			this.settings.screenshotSubfolder,
+		);
 		await this.lib.vaultPaths.ensureFolder(folder);
 		const stamp = formatTimestamp(this.capturedImage.capturedAt);
 		const targetRel = `${folder}/${stamp}.png`;
@@ -368,9 +477,11 @@ export class IssueDialog extends Modal {
 		try {
 			const savedPath = await this.ensureScreenshotSaved();
 			if (savedPath && !this.payloadEdited) {
-				this.payloadTextarea?.setValue(this.generatePayloadText(savedPath));
+				this.payloadTextarea?.setValue(
+					this.generatePayloadText(savedPath),
+				);
 			}
-			const text = this.payloadTextarea?.getValue() ?? "";
+			const text = this.payloadTextarea?.getValue() ?? '';
 			await this.lib.clipboard.writeText(text);
 
 			let savedIssuePath: string | null = null;
@@ -381,17 +492,19 @@ export class IssueDialog extends Modal {
 			new Notice(
 				savedIssuePath
 					? `Copied payload. Saved issue to ${savedIssuePath}`
-					: "Copied issue payload to clipboard.",
+					: 'Copied issue payload to clipboard.',
 				2500,
 			);
 			this.copied = true;
 			this.close();
 		} catch (e) {
-			new Notice("Copy failed: " + (e as Error).message, 6000);
+			new Notice('Copy failed: ' + (e as Error).message, 6000);
 		}
 	}
 
-	private async saveIssueFile(screenshotPath: string | null): Promise<string> {
+	private async saveIssueFile(
+		screenshotPath: string | null,
+	): Promise<string> {
 		const folder = this.lib.storage.resolve(this.settings.issueSubfolder);
 		await this.lib.vaultPaths.ensureFolder(folder);
 		const when = this.capturedImage?.capturedAt ?? Date.now();
@@ -418,7 +531,7 @@ export class IssueDialog extends Modal {
 			this.copied = true;
 			this.close();
 		} catch (e) {
-			new Notice("Copy failed: " + (e as Error).message, 6000);
+			new Notice('Copy failed: ' + (e as Error).message, 6000);
 		}
 	}
 }
@@ -427,7 +540,8 @@ function blobToDataUrl(blob: Blob): Promise<string> {
 	return new Promise((resolve, reject) => {
 		const reader = new FileReader();
 		reader.onload = (): void => resolve(reader.result as string);
-		reader.onerror = (): void => reject(reader.error ?? new Error("Failed to read image."));
+		reader.onerror = (): void =>
+			reject(reader.error ?? new Error('Failed to read image.'));
 		reader.readAsDataURL(blob);
 	});
 }

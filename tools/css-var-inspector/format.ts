@@ -1,4 +1,4 @@
-import type { CssVar } from "./types";
+import type { CssVar } from './types';
 
 // Pure formatting/filtering (no DOM), unit-testable like state-inspector/format.ts.
 
@@ -9,7 +9,9 @@ export function filterCssVars(vars: CssVar[], query: string): CssVar[] {
 	const q = query.trim().toLowerCase();
 	if (!q) return vars;
 	return vars.filter(
-		(v) => v.name.toLowerCase().includes(q) || v.value.toLowerCase().includes(q),
+		(v) =>
+			v.name.toLowerCase().includes(q) ||
+			v.value.toLowerCase().includes(q),
 	);
 }
 
@@ -20,5 +22,5 @@ export function formatVarLine(v: CssVar): string {
 }
 
 export function formatBlob(vars: CssVar[]): string {
-	return vars.map(formatVarLine).join("\n");
+	return vars.map(formatVarLine).join('\n');
 }

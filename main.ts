@@ -1,17 +1,22 @@
-import { Plugin } from "obsidian";
-import { loadSettings, saveSettings, ToolboxData, ToolboxSettingTab } from "./settings";
-import { buildLib } from "./lib";
-import type { ToolboxLib } from "./lib/types";
-import type { Disposable, ToolContext, ToolHandle } from "./tools/types";
+import { Plugin } from 'obsidian';
+import {
+	loadSettings,
+	saveSettings,
+	ToolboxData,
+	ToolboxSettingTab,
+} from './settings';
+import { buildLib } from './lib';
+import type { ToolboxLib } from './lib/types';
+import type { Disposable, ToolContext, ToolHandle } from './tools/types';
 
-import issueCapture from "./tools/issue-capture";
-import reloader from "./tools/reloader";
-import stateInspector from "./tools/state-inspector";
-import iconBrowser from "./tools/icon-browser";
-import cssVarInspector from "./tools/css-var-inspector";
-import commandInspector from "./tools/command-inspector";
-import diagnostics from "./tools/diagnostics";
-import eventSpy from "./tools/event-spy";
+import issueCapture from './tools/issue-capture';
+import reloader from './tools/reloader';
+import stateInspector from './tools/state-inspector';
+import iconBrowser from './tools/icon-browser';
+import cssVarInspector from './tools/css-var-inspector';
+import commandInspector from './tools/command-inspector';
+import diagnostics from './tools/diagnostics';
+import eventSpy from './tools/event-spy';
 
 const TOOLS: ToolHandle[] = [
 	issueCapture,
@@ -40,7 +45,8 @@ export default class DeveloperToolboxPlugin extends Plugin {
 			// are never undefined for an existing install (which would throw when
 			// passed to normalizePath and similar). Stored values win.
 			const merged = { ...tool.defaultSettings, ...(stored ?? {}) };
-			const changed = !stored || JSON.stringify(merged) !== JSON.stringify(stored);
+			const changed =
+				!stored || JSON.stringify(merged) !== JSON.stringify(stored);
 			this.data.tools[tool.id] = merged;
 			if (changed) {
 				await saveSettings(this);
@@ -71,7 +77,9 @@ export default class DeveloperToolboxPlugin extends Plugin {
 		this.active.delete(tool.id);
 	}
 
-	buildContext<T extends { enabled: boolean }>(tool: ToolHandle<T>): ToolContext<T> {
+	buildContext<T extends { enabled: boolean }>(
+		tool: ToolHandle<T>,
+	): ToolContext<T> {
 		const settings = this.data.tools[tool.id] as unknown as T;
 		return {
 			app: this.app,

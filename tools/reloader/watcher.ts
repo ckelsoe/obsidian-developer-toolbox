@@ -1,12 +1,12 @@
-import { FileSystemAdapter, Notice, type App } from "obsidian";
-import type { ReloaderSettings } from "./types";
-import type { ReloadLog } from "./log";
+import { FileSystemAdapter, Notice, type App } from 'obsidian';
+import type { ReloaderSettings } from './types';
+import type { ReloadLog } from './log';
 import {
 	WATCHED_FILES,
 	signatureFromReads,
 	shouldReload,
 	type ReadResult,
-} from "./signature";
+} from './signature';
 
 // Membership set for the directory-watch filter. WATCHED_FILES (shared with the
 // signature helper) is the source of truth; a Set makes the per-event lookup
@@ -23,7 +23,7 @@ interface FsLike {
 		path: string,
 		listener: (eventType: string, filename: string | null) => void,
 	): FsWatcherLike;
-	readFileSync(path: string, encoding: "utf8"): string;
+	readFileSync(path: string, encoding: 'utf8'): string;
 }
 
 interface PathLike {
@@ -35,7 +35,7 @@ interface PathLike {
 // no-top-level-Node-import rule satisfied.
 function requireNode<T>(id: string): T | null {
 	const req = (window as { require?: (id: string) => unknown }).require;
-	if (typeof req !== "function") return null;
+	if (typeof req !== 'function') return null;
 	try {
 		return req(id) as T;
 	} catch {
@@ -64,11 +64,11 @@ export class PluginReloadWatcher {
 	) {}
 
 	start(): void {
-		const fs = requireNode<FsLike>("fs");
-		const path = requireNode<PathLike>("path");
+		const fs = requireNode<FsLike>('fs');
+		const path = requireNode<PathLike>('path');
 		const adapter = this.app.vault.adapter;
 		if (!fs || !path || !(adapter instanceof FileSystemAdapter)) {
-			this.diag("Auto-watch unavailable on this platform.", true);
+			this.diag('Auto-watch unavailable on this platform.', true);
 			return;
 		}
 		this.fs = fs;
@@ -87,7 +87,7 @@ export class PluginReloadWatcher {
 			// Baseline the folder's build output as it is right now, which is the
 			// build Obsidian already has loaded. A later event whose signature still
 			// equals this baseline is a no-op and is skipped in fire().
-			this.baselines.set(id, this.signatureFor(id) ?? "");
+			this.baselines.set(id, this.signatureFor(id) ?? '');
 			try {
 				// Watch the directory, not main.js directly. esbuild writes via
 				// atomic rename, which invalidates a file-bound watch after the
@@ -98,7 +98,9 @@ export class PluginReloadWatcher {
 					// writes to other files like data.json, which Obsidian touches on
 					// its own and would otherwise fire phantom reloads every few minutes.
 					if (!filename || !WATCHED_FILE_SET.has(filename)) return;
-					this.log.append(`detected change: ${filename} (${manifest.name})`);
+					this.log.append(
+						`detected change: ${filename} (${manifest.name})`,
+					);
 					this.schedule(id);
 				});
 				this.watchers.push(watcher);
@@ -112,8 +114,12 @@ export class PluginReloadWatcher {
 		}
 
 		if (watched.length) {
-			this.diag(`Watching ${watched.length} plugin(s): ${watched.join(", ")}.`);
-			this.log.append(`watching ${watched.length} plugin(s): ${watched.join(", ")}`);
+			this.diag(
+				`Watching ${watched.length} plugin(s): ${watched.join(', ')}.`,
+			);
+			this.log.append(
+				`watching ${watched.length} plugin(s): ${watched.join(', ')}`,
+			);
 		}
 	}
 
@@ -138,15 +144,15 @@ export class PluginReloadWatcher {
 	// must NOT be encoded as a stable `absent`, or a real rebuild could alias to
 	// the baseline and be skipped. Callers treat `error` as "unknown -> reload".
 	private readState(dir: string, name: string): ReadResult {
-		if (!this.fs || !this.path) return { kind: "error" };
+		if (!this.fs || !this.path) return { kind: 'error' };
 		try {
 			return {
-				kind: "content",
-				text: this.fs.readFileSync(this.path.join(dir, name), "utf8"),
+				kind: 'content',
+				text: this.fs.readFileSync(this.path.join(dir, name), 'utf8'),
 			};
 		} catch (e) {
 			const code = (e as { code?: string }).code;
-			return code === "ENOENT" ? { kind: "absent" } : { kind: "error" };
+			return code === 'ENOENT' ? { kind: 'absent' } : { kind: 'error' };
 		}
 	}
 
@@ -165,7 +171,10 @@ export class PluginReloadWatcher {
 		if (existing) window.clearTimeout(existing);
 		this.timers.set(
 			id,
-			window.setTimeout(() => this.fire(id), this.settings.watchDebounceMs),
+			window.setTimeout(
+				() => this.fire(id),
+				this.settings.watchDebounceMs,
+			),
 		);
 	}
 
@@ -178,7 +187,9 @@ export class PluginReloadWatcher {
 		// reload, preserving the previous always-reload behavior as the safe default.
 		const current = this.signatureFor(id);
 		if (!shouldReload(this.baselines.get(id), current)) {
-			this.log.append(`change event for ${id}; content unchanged, skipping reload`);
+			this.log.append(
+				`change event for ${id}; content unchanged, skipping reload`,
+			);
 			return;
 		}
 		if (current !== null) this.baselines.set(id, current);

@@ -24,7 +24,7 @@ export const DEFAULT_RELOADER_SETTINGS: ReloaderSettings = {
 	watchDebounceMs: 250,
 	showDiagnostics: true,
 	writeLog: false,
-	logSubfolder: "dev-logs",
+	logSubfolder: 'dev-logs',
 };
 
-export const RELOADER_LOG_FILENAME = "reloader-log.md";
+export const RELOADER_LOG_FILENAME = 'reloader-log.md';
