@@ -115,7 +115,7 @@ export class IssueDialog extends Modal {
 		const toolbar = content.createDiv({ cls: "toolbox-annotation-toolbar" });
 		const canvasHolder = content.createDiv({ cls: "toolbox-annotation-stage" });
 
-		const img = activeDocument.createElement("img");
+		const img = activeWindow.createEl("img");
 		const url = URL.createObjectURL(this.capturedImage!.pngBlob);
 		img.onload = (): void => {
 			URL.revokeObjectURL(url);

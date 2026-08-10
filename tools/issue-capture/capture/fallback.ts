@@ -41,7 +41,7 @@ export function isFallbackAvailable(): boolean {
 
 async function streamToBlob(stream: MediaStream): Promise<{ blob: Blob; widthPx: number; heightPx: number }> {
 	const doc = activeDocument;
-	const video = doc.createElement("video");
+	const video = doc.win.createEl("video");
 	video.srcObject = stream;
 	video.muted = true;
 	await video.play();
@@ -49,7 +49,7 @@ async function streamToBlob(stream: MediaStream): Promise<{ blob: Blob; widthPx:
 		if (video.readyState >= 2) resolve();
 		else video.onloadeddata = (): void => resolve();
 	});
-	const canvas = doc.createElement("canvas");
+	const canvas = doc.win.createEl("canvas");
 	canvas.width = video.videoWidth;
 	canvas.height = video.videoHeight;
 	const ctx = canvas.getContext("2d");
