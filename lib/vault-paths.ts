@@ -40,8 +40,13 @@ function suggestUniquePath(app: App, relPath: string): Promise<string> {
 			return Promise.resolve(candidate);
 		n++;
 	}
-	throw new Error(
-		`could not find a unique path for ${path} after 1000 attempts`,
+	// Reject (not a synchronous throw): this method is non-async but contracted
+	// to return a Promise, so the exhaustion path must surface as a rejection to
+	// match how callers await it, the same behaviour as the former async body.
+	return Promise.reject(
+		new Error(
+			`could not find a unique path for ${path} after 1000 attempts`,
+		),
 	);
 }
 
