@@ -1,7 +1,7 @@
-import { Notice } from "obsidian";
-import type { CountdownNoticeHandle } from "../types";
+import { Notice } from 'obsidian';
+import type { CountdownNoticeHandle } from '../types';
 
-const NOTICE_CLASS = "toolbox-countdown-notice";
+const NOTICE_CLASS = 'toolbox-countdown-notice';
 
 export function countdownNotice(
 	seconds: number,
@@ -39,7 +39,7 @@ export function countdownNotice(
 			cancelled = true;
 			window.clearInterval(interval);
 			notice.hide();
-			rejectOuter(new Error("countdown cancelled"));
+			rejectOuter(new Error('countdown cancelled'));
 		},
 	};
 }

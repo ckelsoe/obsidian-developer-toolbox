@@ -1,4 +1,4 @@
-import type { CssVar } from "./types";
+import type { CssVar } from './types';
 
 // DOM/CSSOM collection. Obsidian exposes no variable-enumeration API, so this is
 // standard CSSOM: scan every readable stylesheet for custom-property names, then
@@ -26,7 +26,7 @@ export function collectCssVars(doc: Document): CssVar[] {
 			const style = rule.style;
 			for (let i = 0; i < style.length; i++) {
 				const prop = style.item(i);
-				if (prop.startsWith("--")) names.add(prop);
+				if (prop.startsWith('--')) names.add(prop);
 			}
 		}
 	}
@@ -39,7 +39,7 @@ export function collectCssVars(doc: Document): CssVar[] {
 
 	const out: CssVar[] = [];
 	for (const name of names) {
-		const value = computed ? computed.getPropertyValue(name).trim() : "";
+		const value = computed ? computed.getPropertyValue(name).trim() : '';
 		out.push({ name, value });
 	}
 	return out.sort((a, b) => a.name.localeCompare(b.name));

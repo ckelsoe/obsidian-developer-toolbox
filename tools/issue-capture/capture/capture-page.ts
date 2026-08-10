@@ -21,9 +21,9 @@ interface ElectronLike {
 
 function requireElectron(): ElectronLike | null {
 	const req = (window as { require?: (id: string) => unknown }).require;
-	if (typeof req !== "function") return null;
+	if (typeof req !== 'function') return null;
 	try {
-		return req("electron") as ElectronLike;
+		return req('electron') as ElectronLike;
 	} catch {
 		return null;
 	}
@@ -32,14 +32,18 @@ function requireElectron(): ElectronLike | null {
 export function isCapturePageAvailable(): boolean {
 	const electron = requireElectron();
 	const wc = electron?.remote?.getCurrentWebContents?.();
-	return typeof wc?.capturePage === "function";
+	return typeof wc?.capturePage === 'function';
 }
 
-export async function captureViaCapturePage(): Promise<{ blob: Blob; widthPx: number; heightPx: number }> {
+export async function captureViaCapturePage(): Promise<{
+	blob: Blob;
+	widthPx: number;
+	heightPx: number;
+}> {
 	const electron = requireElectron();
 	const wc = electron?.remote?.getCurrentWebContents?.();
 	if (!wc?.capturePage) {
-		throw new Error("webContents.capturePage is not available");
+		throw new Error('webContents.capturePage is not available');
 	}
 	const image = await wc.capturePage();
 	const buf = image.toPNG();
@@ -48,6 +52,6 @@ export async function captureViaCapturePage(): Promise<{ blob: Blob; widthPx: nu
 	const u8 = buf instanceof Uint8Array ? buf : new Uint8Array(buf);
 	const ab = new ArrayBuffer(u8.byteLength);
 	new Uint8Array(ab).set(u8);
-	const blob = new Blob([ab], { type: "image/png" });
+	const blob = new Blob([ab], { type: 'image/png' });
 	return { blob, widthPx: size.width, heightPx: size.height };
 }

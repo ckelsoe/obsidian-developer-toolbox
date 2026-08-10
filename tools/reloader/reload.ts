@@ -1,5 +1,5 @@
-import type { App } from "obsidian";
-import { readPluginVersionFromDisk } from "../../lib/manifest-version";
+import type { App } from 'obsidian';
+import { readPluginVersionFromDisk } from '../../lib/manifest-version';
 
 export interface ReloadResult {
 	id: string;
@@ -23,13 +23,16 @@ export function reloadedLabel(result: ReloadResult): string {
 // the Community plugins list) reflects the freshly built file rather than the
 // value cached at startup. Best-effort: guarded in case the internal method is
 // absent in a future Obsidian version.
-export async function reloadPlugin(app: App, id: string): Promise<ReloadResult> {
+export async function reloadPlugin(
+	app: App,
+	id: string,
+): Promise<ReloadResult> {
 	const name = app.plugins.manifests[id]?.name ?? id;
 	try {
 		if (app.plugins.enabledPlugins.has(id)) {
 			await app.plugins.disablePlugin(id);
 		}
-		if (typeof app.plugins.loadManifests === "function") {
+		if (typeof app.plugins.loadManifests === 'function') {
 			try {
 				await app.plugins.loadManifests();
 			} catch {
@@ -38,8 +41,14 @@ export async function reloadPlugin(app: App, id: string): Promise<ReloadResult> 
 		}
 		await app.plugins.enablePlugin(id);
 		const version =
-			(await readPluginVersionFromDisk(app, id)) ?? app.plugins.manifests[id]?.version;
-		return { id, name: app.plugins.manifests[id]?.name ?? name, version, ok: true };
+			(await readPluginVersionFromDisk(app, id)) ??
+			app.plugins.manifests[id]?.version;
+		return {
+			id,
+			name: app.plugins.manifests[id]?.name ?? name,
+			version,
+			ok: true,
+		};
 	} catch (e) {
 		return { id, name, ok: false, error: (e as Error).message };
 	}

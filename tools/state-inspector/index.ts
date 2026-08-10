@@ -1,13 +1,16 @@
-import type { Disposable, ToolContext, ToolHandle } from "../types";
-import { DEFAULT_STATE_INSPECTOR_SETTINGS, type StateInspectorSettings } from "./types";
-import { StateInspectorModal } from "./modal";
-import { renderStateInspectorSettings } from "./settings";
+import type { Disposable, ToolContext, ToolHandle } from '../types';
+import {
+	DEFAULT_STATE_INSPECTOR_SETTINGS,
+	type StateInspectorSettings,
+} from './types';
+import { StateInspectorModal } from './modal';
+import { renderStateInspectorSettings } from './settings';
 
 type Ctx = ToolContext<StateInspectorSettings>;
 
 const stateInspector: ToolHandle<StateInspectorSettings> = {
-	id: "state-inspector",
-	displayName: "State inspector",
+	id: 'state-inspector',
+	displayName: 'State inspector',
 	defaultSettings: DEFAULT_STATE_INSPECTOR_SETTINGS,
 
 	register(ctx: Ctx): Disposable {
@@ -18,11 +21,15 @@ const stateInspector: ToolHandle<StateInspectorSettings> = {
 			}).open();
 		};
 
-		const ribbon = ctx.plugin.addRibbonIcon("activity", "Inspect live state", () => open());
+		const ribbon = ctx.plugin.addRibbonIcon(
+			'activity',
+			'Inspect live state',
+			() => open(),
+		);
 
 		ctx.plugin.addCommand({
-			id: "inspect-live-state",
-			name: "Inspect live state",
+			id: 'inspect-live-state',
+			name: 'Inspect live state',
 			callback: () => open(),
 		});
 

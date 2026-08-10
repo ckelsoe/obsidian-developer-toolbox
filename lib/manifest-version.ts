@@ -1,4 +1,4 @@
-import { normalizePath, type App } from "obsidian";
+import { normalizePath, type App } from 'obsidian';
 
 // Reads a plugin's version straight from its manifest.json on disk. Obsidian
 // populates app.plugins.manifests at startup and does not refresh it on a live
@@ -12,7 +12,9 @@ export async function readPluginVersionFromDisk(
 	const dir = app.plugins.manifests[id]?.dir;
 	if (!dir) return undefined;
 	try {
-		const raw = await app.vault.adapter.read(normalizePath(`${dir}/manifest.json`));
+		const raw = await app.vault.adapter.read(
+			normalizePath(`${dir}/manifest.json`),
+		);
 		return (JSON.parse(raw) as { version?: string }).version;
 	} catch {
 		return undefined;

@@ -1,8 +1,16 @@
-import { App, ButtonComponent, Modal, Notice, SearchComponent } from "obsidian";
-import type { ToolboxLib } from "../../lib/types";
-import type DeveloperToolboxPlugin from "../../main";
-import { createVirtualList, type VirtualListController } from "../../lib/ui/virtual-list";
-import { buildCommandRows, filterCommands, formatBlob, type CommandRow } from "./collect";
+import { App, ButtonComponent, Modal, Notice, SearchComponent } from 'obsidian';
+import type { ToolboxLib } from '../../lib/types';
+import type DeveloperToolboxPlugin from '../../main';
+import {
+	createVirtualList,
+	type VirtualListController,
+} from '../../lib/ui/virtual-list';
+import {
+	buildCommandRows,
+	filterCommands,
+	formatBlob,
+	type CommandRow,
+} from './collect';
 
 interface CommandInspectorOpts {
 	lib: ToolboxLib;
@@ -25,7 +33,11 @@ export class CommandInspectorModal extends Modal {
 	private matches: CommandRow[] = [];
 	private vlist: VirtualListController | null = null;
 
-	constructor(app: App, _plugin: DeveloperToolboxPlugin, opts: CommandInspectorOpts) {
+	constructor(
+		app: App,
+		_plugin: DeveloperToolboxPlugin,
+		opts: CommandInspectorOpts,
+	) {
 		super(app);
 		this.lib = opts.lib;
 
@@ -33,32 +45,37 @@ export class CommandInspectorModal extends Modal {
 		const manifests = app.plugins?.manifests ?? {};
 		const customKeys = app.hotkeyManager?.customKeys ?? {};
 		const defaultKeys = app.hotkeyManager?.defaultKeys ?? {};
-		this.rows = buildCommandRows(commands, manifests, customKeys, defaultKeys);
+		this.rows = buildCommandRows(
+			commands,
+			manifests,
+			customKeys,
+			defaultKeys,
+		);
 	}
 
 	onOpen(): void {
-		this.modalEl.addClass("toolbox-inspector-dialog");
-		this.titleEl.setText("Command inspector");
+		this.modalEl.addClass('toolbox-inspector-dialog');
+		this.titleEl.setText('Command inspector');
 
 		const { contentEl } = this;
 		contentEl.empty();
 
 		if (this.rows.length === 0) {
 			contentEl.createDiv({
-				cls: "toolbox-cmd-count",
-				text: "No commands found. The command registry is an undocumented Obsidian internal and may have changed shape in this build.",
+				cls: 'toolbox-cmd-count',
+				text: 'No commands found. The command registry is an undocumented Obsidian internal and may have changed shape in this build.',
 			});
 			this.renderButtons(contentEl);
 			return;
 		}
 
 		const search = new SearchComponent(contentEl);
-		search.setPlaceholder("Search by ID, plugin, or hotkey");
-		search.inputEl.addClass("toolbox-cmd-search");
+		search.setPlaceholder('Search by ID, plugin, or hotkey');
+		search.inputEl.addClass('toolbox-cmd-search');
 		search.onChange((value) => this.renderList(value));
 
-		this.countEl = contentEl.createDiv({ cls: "toolbox-cmd-count" });
-		const listEl = contentEl.createDiv({ cls: "toolbox-cmd-list" });
+		this.countEl = contentEl.createDiv({ cls: 'toolbox-cmd-count' });
+		const listEl = contentEl.createDiv({ cls: 'toolbox-cmd-list' });
 
 		this.vlist = createVirtualList({
 			scrollEl: listEl,
@@ -67,7 +84,7 @@ export class CommandInspectorModal extends Modal {
 		});
 
 		this.renderButtons(contentEl);
-		this.renderList("");
+		this.renderList('');
 	}
 
 	onClose(): void {
@@ -85,28 +102,28 @@ export class CommandInspectorModal extends Modal {
 	private renderRow(index: number, rowEl: HTMLElement): void {
 		const r = this.matches[index];
 		if (!r) return;
-		rowEl.addClass("toolbox-cmd-row");
-		rowEl.setAttribute("aria-label", `Copy ${r.id}`);
-		rowEl.setAttribute("title", r.id);
-		rowEl.createSpan({ cls: "toolbox-cmd-id", text: r.id });
-		rowEl.createSpan({ cls: "toolbox-cmd-plugin", text: r.owningPlugin });
+		rowEl.addClass('toolbox-cmd-row');
+		rowEl.setAttribute('aria-label', `Copy ${r.id}`);
+		rowEl.setAttribute('title', r.id);
+		rowEl.createSpan({ cls: 'toolbox-cmd-id', text: r.id });
+		rowEl.createSpan({ cls: 'toolbox-cmd-plugin', text: r.owningPlugin });
 		rowEl.createSpan({
-			cls: "toolbox-cmd-hotkey",
-			text: r.hotkeys.length ? r.hotkeys.join(", ") : "no hotkey",
+			cls: 'toolbox-cmd-hotkey',
+			text: r.hotkeys.length ? r.hotkeys.join(', ') : 'no hotkey',
 		});
-		rowEl.addEventListener("click", () => void this.copyId(r));
+		rowEl.addEventListener('click', () => void this.copyId(r));
 	}
 
 	private renderButtons(parent: HTMLElement): void {
-		const row = parent.createDiv({ cls: "toolbox-issue-buttons" });
+		const row = parent.createDiv({ cls: 'toolbox-issue-buttons' });
 
 		new ButtonComponent(row)
-			.setButtonText("Close")
+			.setButtonText('Close')
 			.onClick(() => this.close());
 
 		if (this.rows.length > 0) {
 			new ButtonComponent(row)
-				.setButtonText("Copy all")
+				.setButtonText('Copy all')
 				.setCta()
 				.onClick(() => void this.copyAll());
 		}
@@ -117,7 +134,7 @@ export class CommandInspectorModal extends Modal {
 			await this.lib.clipboard.writeText(r.id);
 			new Notice(`Copied ${r.id}.`, 2000);
 		} catch (e) {
-			new Notice("Copy failed: " + (e as Error).message, 6000);
+			new Notice('Copy failed: ' + (e as Error).message, 6000);
 		}
 	}
 
@@ -126,7 +143,7 @@ export class CommandInspectorModal extends Modal {
 			await this.lib.clipboard.writeText(formatBlob(this.matches));
 			new Notice(`Copied ${this.matches.length} commands.`, 2000);
 		} catch (e) {
-			new Notice("Copy failed: " + (e as Error).message, 6000);
+			new Notice('Copy failed: ' + (e as Error).message, 6000);
 		}
 	}
 }

@@ -1,15 +1,18 @@
-import { normalizePath, type App } from "obsidian";
-import type DeveloperToolboxPlugin from "../main";
+import { normalizePath, type App } from 'obsidian';
+import type DeveloperToolboxPlugin from '../main';
 
 // Creates a folder and every missing parent. Idempotent and tolerant of races:
 // if the folder already exists (or another write created it first), it is a
 // no-op rather than an error. Needed for nested paths like dev-tools/dev-issues.
-export async function ensureVaultFolder(app: App, relPath: string): Promise<void> {
+export async function ensureVaultFolder(
+	app: App,
+	relPath: string,
+): Promise<void> {
 	const path = normalizePath(relPath);
-	if (!path || path === "/" || path === ".") return;
+	if (!path || path === '/' || path === '.') return;
 	if (app.vault.getAbstractFileByPath(path)) return;
-	let current = "";
-	for (const segment of path.split("/")) {
+	let current = '';
+	for (const segment of path.split('/')) {
 		if (!segment) continue;
 		current = current ? `${current}/${segment}` : segment;
 		if (app.vault.getAbstractFileByPath(current)) continue;
@@ -22,19 +25,24 @@ export async function ensureVaultFolder(app: App, relPath: string): Promise<void
 	}
 }
 
-export async function suggestUniquePath(app: App, relPath: string): Promise<string> {
+function suggestUniquePath(app: App, relPath: string): Promise<string> {
+	// Resolution is synchronous (getAbstractFileByPath is a cache lookup); the
+	// Promise return type is kept so callers await it like a real vault write.
 	const path = normalizePath(relPath);
-	if (!app.vault.getAbstractFileByPath(path)) return path;
-	const dot = path.lastIndexOf(".");
+	if (!app.vault.getAbstractFileByPath(path)) return Promise.resolve(path);
+	const dot = path.lastIndexOf('.');
 	const base = dot > 0 ? path.slice(0, dot) : path;
-	const ext = dot > 0 ? path.slice(dot) : "";
+	const ext = dot > 0 ? path.slice(dot) : '';
 	let n = 1;
 	while (n < 1000) {
 		const candidate = normalizePath(`${base}-${n}${ext}`);
-		if (!app.vault.getAbstractFileByPath(candidate)) return candidate;
+		if (!app.vault.getAbstractFileByPath(candidate))
+			return Promise.resolve(candidate);
 		n++;
 	}
-	throw new Error(`could not find a unique path for ${path} after 1000 attempts`);
+	throw new Error(
+		`could not find a unique path for ${path} after 1000 attempts`,
+	);
 }
 
 export function buildVaultPaths(plugin: DeveloperToolboxPlugin): {
@@ -42,7 +50,9 @@ export function buildVaultPaths(plugin: DeveloperToolboxPlugin): {
 	suggestUnique(relPath: string): Promise<string>;
 } {
 	return {
-		ensureFolder: (relPath: string): Promise<void> => ensureVaultFolder(plugin.app, relPath),
-		suggestUnique: (relPath: string): Promise<string> => suggestUniquePath(plugin.app, relPath),
+		ensureFolder: (relPath: string): Promise<void> =>
+			ensureVaultFolder(plugin.app, relPath),
+		suggestUnique: (relPath: string): Promise<string> =>
+			suggestUniquePath(plugin.app, relPath),
 	};
 }

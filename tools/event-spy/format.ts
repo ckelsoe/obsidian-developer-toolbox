@@ -3,7 +3,7 @@
 // pull the primitive fields off the real objects and pass them here, so this
 // stays unit-testable in plain node.
 
-export function spyLabel(bus: "workspace" | "vault", event: string): string {
+export function spyLabel(bus: 'workspace' | 'vault', event: string): string {
 	return `${bus}:${event}`;
 }
 

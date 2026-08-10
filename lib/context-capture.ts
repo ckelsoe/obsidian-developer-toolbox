@@ -1,59 +1,65 @@
-import { apiVersion, MarkdownView, Platform } from "obsidian";
-import type DeveloperToolboxPlugin from "../main";
-import type { CaptureContextOpts, CapturedContext, ToolboxLib } from "./types";
-import { redactHome, redactVault } from "./path-redact";
+import { apiVersion, MarkdownView, Platform } from 'obsidian';
+import type DeveloperToolboxPlugin from '../main';
+import type { CaptureContextOpts, CapturedContext, ToolboxLib } from './types';
+import { redactHome } from './path-redact';
 
 const DEFAULT_OPTS: CaptureContextOpts = {
 	includeVaultName: true,
 	includePluginList: true,
-	pathStyle: "vault-relative",
+	pathStyle: 'vault-relative',
 };
 
-function detectOsFamily(): "windows" | "macos" | "linux" {
-	if (Platform.isWin) return "windows";
-	if (Platform.isMacOS) return "macos";
-	return "linux";
+function detectOsFamily(): 'windows' | 'macos' | 'linux' {
+	if (Platform.isWin) return 'windows';
+	if (Platform.isMacOS) return 'macos';
+	return 'linux';
 }
 
 function detectObsidianVersion(): string {
 	// Obsidian exports `apiVersion` (the installed app version). This is the
 	// documented source and avoids sniffing navigator.userAgent (which the
 	// obsidianmd/platform rule flags).
-	return apiVersion || "unknown";
+	return apiVersion || 'unknown';
 }
 
 function detectElectronVersion(): string {
 	// Obsidian exposes no Electron version API. On desktop, read it from the Node
 	// `process` global via globalThis (no navigator sniffing, no node-module
 	// import). Mobile has no Electron, so report "unknown" there.
-	if (!Platform.isDesktop) return "unknown";
-	const proc = (window as { process?: { versions?: { electron?: string } } }).process;
-	return proc?.versions?.electron ?? "unknown";
+	if (!Platform.isDesktop) return 'unknown';
+	const proc = (window as { process?: { versions?: { electron?: string } } })
+		.process;
+	return proc?.versions?.electron ?? 'unknown';
 }
 
-function modeFromView(view: MarkdownView): CapturedContext["activeViewMode"] {
+function modeFromView(view: MarkdownView): CapturedContext['activeViewMode'] {
 	const mode = view.getMode();
-	if (mode === "source") {
+	if (mode === 'source') {
 		const state = view.getState() as { source?: boolean } | undefined;
-		return state?.source === false ? "live-preview" : "source";
+		return state?.source === false ? 'live-preview' : 'source';
 	}
-	if (mode === "preview") return "preview";
-	return "unknown";
+	if (mode === 'preview') return 'preview';
+	return 'unknown';
 }
 
-function detectViewMode(plugin: DeveloperToolboxPlugin): CapturedContext["activeViewMode"] {
+function detectViewMode(
+	plugin: DeveloperToolboxPlugin,
+): CapturedContext['activeViewMode'] {
 	const focused = plugin.app.workspace.getActiveViewOfType(MarkdownView);
 	if (focused) return modeFromView(focused);
 	const activeFile = plugin.app.workspace.getActiveFile();
-	if (!activeFile) return "unknown";
-	const leaves = plugin.app.workspace.getLeavesOfType("markdown");
+	if (!activeFile) return 'unknown';
+	const leaves = plugin.app.workspace.getLeavesOfType('markdown');
 	for (const leaf of leaves) {
 		const view = leaf.view;
-		if (view instanceof MarkdownView && view.file?.path === activeFile.path) {
+		if (
+			view instanceof MarkdownView &&
+			view.file?.path === activeFile.path
+		) {
 			return modeFromView(view);
 		}
 	}
-	return "unknown";
+	return 'unknown';
 }
 
 function detectLeafType(plugin: DeveloperToolboxPlugin): string | null {
@@ -67,11 +73,16 @@ function getEnabledPluginIds(plugin: DeveloperToolboxPlugin): string[] {
 }
 
 function getVaultBase(plugin: DeveloperToolboxPlugin): string {
-	const adapter = plugin.app.vault.adapter as { basePath?: string; getBasePath?: () => string };
-	return adapter.basePath ?? adapter.getBasePath?.() ?? "";
+	const adapter = plugin.app.vault.adapter as {
+		basePath?: string;
+		getBasePath?: () => string;
+	};
+	return adapter.basePath ?? adapter.getBasePath?.() ?? '';
 }
 
-export function buildContextCapture(plugin: DeveloperToolboxPlugin): ToolboxLib["context"] {
+export function buildContextCapture(
+	plugin: DeveloperToolboxPlugin,
+): ToolboxLib['context'] {
 	return {
 		capture(partial: Partial<CaptureContextOpts> = {}): CapturedContext {
 			const opts: CaptureContextOpts = { ...DEFAULT_OPTS, ...partial };
@@ -79,15 +90,17 @@ export function buildContextCapture(plugin: DeveloperToolboxPlugin): ToolboxLib[
 			let renderedActiveFile: string | null = null;
 			if (activeFile) {
 				switch (opts.pathStyle) {
-					case "basename":
+					case 'basename':
 						renderedActiveFile = activeFile.name;
 						break;
-					case "vault-relative":
+					case 'vault-relative':
 						renderedActiveFile = activeFile.path;
 						break;
-					case "absolute": {
+					case 'absolute': {
 						const base = getVaultBase(plugin);
-						renderedActiveFile = base ? redactHome(`${base}/${activeFile.path}`) : activeFile.path;
+						renderedActiveFile = base
+							? redactHome(`${base}/${activeFile.path}`)
+							: activeFile.path;
 						break;
 					}
 				}
@@ -97,7 +110,8 @@ export function buildContextCapture(plugin: DeveloperToolboxPlugin): ToolboxLib[
 			if (opts.includeVaultName) vaultName = plugin.app.vault.getName();
 
 			let enabledPluginIds: string[] | null = null;
-			if (opts.includePluginList) enabledPluginIds = getEnabledPluginIds(plugin);
+			if (opts.includePluginList)
+				enabledPluginIds = getEnabledPluginIds(plugin);
 
 			return {
 				obsidianVersion: detectObsidianVersion(),
@@ -112,5 +126,3 @@ export function buildContextCapture(plugin: DeveloperToolboxPlugin): ToolboxLib[
 		},
 	};
 }
-
-export { redactHome, redactVault };

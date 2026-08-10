@@ -22,9 +22,9 @@ interface ElectronLike {
 
 function requireElectron(): ElectronLike | null {
 	const req = (window as { require?: (id: string) => unknown }).require;
-	if (typeof req !== "function") return null;
+	if (typeof req !== 'function') return null;
 	try {
-		return req("electron") as ElectronLike;
+		return req('electron') as ElectronLike;
 	} catch {
 		return null;
 	}
@@ -32,16 +32,20 @@ function requireElectron(): ElectronLike | null {
 
 function getDesktopCapturer(): DesktopCapturerLike | null {
 	const electron = requireElectron();
-	return electron?.desktopCapturer ?? electron?.remote?.desktopCapturer ?? null;
+	return (
+		electron?.desktopCapturer ?? electron?.remote?.desktopCapturer ?? null
+	);
 }
 
 export function isFallbackAvailable(): boolean {
 	return getDesktopCapturer() !== null;
 }
 
-async function streamToBlob(stream: MediaStream): Promise<{ blob: Blob; widthPx: number; heightPx: number }> {
+async function streamToBlob(
+	stream: MediaStream,
+): Promise<{ blob: Blob; widthPx: number; heightPx: number }> {
 	const doc = activeDocument;
-	const video = doc.win.createEl("video");
+	const video = doc.win.createEl('video');
 	video.srcObject = stream;
 	video.muted = true;
 	await video.play();
@@ -49,34 +53,45 @@ async function streamToBlob(stream: MediaStream): Promise<{ blob: Blob; widthPx:
 		if (video.readyState >= 2) resolve();
 		else video.onloadeddata = (): void => resolve();
 	});
-	const canvas = doc.win.createEl("canvas");
+	const canvas = doc.win.createEl('canvas');
 	canvas.width = video.videoWidth;
 	canvas.height = video.videoHeight;
-	const ctx = canvas.getContext("2d");
+	const ctx = canvas.getContext('2d');
 	if (!ctx) {
 		stream.getTracks().forEach((t) => t.stop());
-		throw new Error("failed to obtain 2d canvas context");
+		throw new Error('failed to obtain 2d canvas context');
 	}
 	ctx.drawImage(video, 0, 0);
 	stream.getTracks().forEach((t) => t.stop());
-	const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/png"));
-	if (!blob) throw new Error("canvas.toBlob returned null");
+	const blob = await new Promise<Blob | null>((resolve) =>
+		canvas.toBlob(resolve, 'image/png'),
+	);
+	if (!blob) throw new Error('canvas.toBlob returned null');
 	return { blob, widthPx: canvas.width, heightPx: canvas.height };
 }
 
-export async function captureViaFallback(): Promise<{ blob: Blob; widthPx: number; heightPx: number }> {
+export async function captureViaFallback(): Promise<{
+	blob: Blob;
+	widthPx: number;
+	heightPx: number;
+}> {
 	const dc = getDesktopCapturer();
-	if (!dc) throw new Error("desktopCapturer is not available");
-	const sources = await dc.getSources({ types: ["window"] });
+	if (!dc) throw new Error('desktopCapturer is not available');
+	const sources = await dc.getSources({ types: ['window'] });
 	const obsSrc = sources.find((s) => /Obsidian/i.test(s.name)) ?? sources[0];
-	if (!obsSrc) throw new Error("no Obsidian window source returned by desktopCapturer");
+	if (!obsSrc)
+		throw new Error(
+			'no Obsidian window source returned by desktopCapturer',
+		);
 	const stream = await (
-		navigator.mediaDevices as unknown as { getUserMedia: (constraints: object) => Promise<MediaStream> }
+		navigator.mediaDevices as unknown as {
+			getUserMedia: (constraints: object) => Promise<MediaStream>;
+		}
 	).getUserMedia({
 		audio: false,
 		video: {
 			mandatory: {
-				chromeMediaSource: "desktop",
+				chromeMediaSource: 'desktop',
 				chromeMediaSourceId: obsSrc.id,
 				minWidth: 320,
 				maxWidth: 8000,

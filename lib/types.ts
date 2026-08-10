@@ -1,16 +1,16 @@
 export interface CaptureContextOpts {
 	includeVaultName: boolean;
 	includePluginList: boolean;
-	pathStyle: "basename" | "vault-relative" | "absolute";
+	pathStyle: 'basename' | 'vault-relative' | 'absolute';
 }
 
 export interface CapturedContext {
 	obsidianVersion: string;
 	electronVersion: string;
-	osFamily: "windows" | "macos" | "linux";
+	osFamily: 'windows' | 'macos' | 'linux';
 	vaultName: string | null;
 	activeFile: string | null;
-	activeViewMode: "source" | "live-preview" | "preview" | "unknown";
+	activeViewMode: 'source' | 'live-preview' | 'preview' | 'unknown';
 	activeLeafType: string | null;
 	enabledPluginIds: string[] | null;
 }
@@ -27,7 +27,7 @@ export interface CountdownNoticeHandle {
 
 export interface DiagnosticsEntry {
 	label: string;
-	status: "ok" | "error" | "info";
+	status: 'ok' | 'error' | 'info';
 	elapsedMs: number | null;
 	timestamp: string;
 	body: string | null;
@@ -37,12 +37,16 @@ export interface DiagnosticsBus {
 	append(
 		label: string,
 		opts?: {
-			status?: "ok" | "error" | "info";
+			status?: 'ok' | 'error' | 'info';
 			elapsedMs?: number;
 			body?: string | Record<string, unknown>;
 		},
 	): void;
-	appendError(label: string, error: unknown, opts?: { elapsedMs?: number }): void;
+	appendError(
+		label: string,
+		error: unknown,
+		opts?: { elapsedMs?: number },
+	): void;
 	// Stores the sink and returns a detach function that clears it. Only the
 	// diagnostics tool attaches a sink; with no sink, entries are dropped.
 	attachSink(sink: (entry: DiagnosticsEntry) => void): () => void;
@@ -68,7 +72,13 @@ export interface ToolboxLib {
 		resolve(subpath: string): string;
 	};
 	ui: {
-		stackedRow(parent: HTMLElement, opts: { name: string; description?: string }): StackedRowResult;
-		countdownNotice(seconds: number, onTick?: (remaining: number) => void): CountdownNoticeHandle;
+		stackedRow(
+			parent: HTMLElement,
+			opts: { name: string; description?: string },
+		): StackedRowResult;
+		countdownNotice(
+			seconds: number,
+			onTick?: (remaining: number) => void,
+		): CountdownNoticeHandle;
 	};
 }

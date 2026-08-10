@@ -1,8 +1,8 @@
-import { TFile, type App } from "obsidian";
-import type { ReloaderSettings } from "./types";
-import { RELOADER_LOG_FILENAME } from "./types";
-import type { ToolboxLib } from "../../lib/types";
-import { ensureVaultFolder } from "../../lib/vault-paths";
+import { TFile, type App } from 'obsidian';
+import type { ReloaderSettings } from './types';
+import { RELOADER_LOG_FILENAME } from './types';
+import type { ToolboxLib } from '../../lib/types';
+import { ensureVaultFolder } from '../../lib/vault-paths';
 
 function nowStamp(): string {
 	const d = new Date();
@@ -13,7 +13,7 @@ function nowStamp(): string {
 	);
 }
 
-const LOG_HEADER = "# Developer Toolbox reloader log\n\n";
+const LOG_HEADER = '# Developer Toolbox reloader log\n\n';
 
 // Append-only markdown log of watcher and reload events. Opt-in (settings.writeLog).
 // Writes are serialized through a promise chain so a burst of events cannot
@@ -29,16 +29,18 @@ export class ReloadLog {
 	) {}
 
 	get path(): string {
-		const sub = this.settings.logSubfolder || "dev-logs";
+		const sub = this.settings.logSubfolder || 'dev-logs';
 		return this.lib.storage.resolve(`${sub}/${RELOADER_LOG_FILENAME}`);
 	}
 
 	append(message: string): void {
 		if (!this.settings.writeLog) return;
 		const line = `- ${nowStamp()} — ${message}\n`;
-		this.chain = this.chain.then(() => this.write(line)).catch(() => {
-			// A failed log write must never break the reload flow.
-		});
+		this.chain = this.chain
+			.then(() => this.write(line))
+			.catch(() => {
+				// A failed log write must never break the reload flow.
+			});
 	}
 
 	private async write(line: string): Promise<void> {
@@ -48,7 +50,7 @@ export class ReloadLog {
 			await this.app.vault.append(file, line);
 			return;
 		}
-		const slash = path.lastIndexOf("/");
+		const slash = path.lastIndexOf('/');
 		if (slash > 0) await ensureVaultFolder(this.app, path.slice(0, slash));
 		await this.app.vault.create(path, LOG_HEADER + line);
 	}

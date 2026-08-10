@@ -1,17 +1,17 @@
-import { normalizePath } from "obsidian";
-import type DeveloperToolboxPlugin from "../main";
-import type { ToolboxLib } from "./types";
-import * as clipboard from "./clipboard";
-import * as pathRedact from "./path-redact";
-import { buildVaultPaths } from "./vault-paths";
-import { buildContextCapture } from "./context-capture";
-import { buildDiagnosticsBus } from "./diagnostics";
-import { stackedRow } from "./ui/stacked-row";
-import { countdownNotice } from "./ui/notice";
+import { normalizePath } from 'obsidian';
+import type DeveloperToolboxPlugin from '../main';
+import type { ToolboxLib } from './types';
+import { writeText } from './clipboard';
+import * as pathRedact from './path-redact';
+import { buildVaultPaths } from './vault-paths';
+import { buildContextCapture } from './context-capture';
+import { buildDiagnosticsBus } from './diagnostics';
+import { stackedRow } from './ui/stacked-row';
+import { countdownNotice } from './ui/notice';
 
 export function buildLib(plugin: DeveloperToolboxPlugin): ToolboxLib {
 	return {
-		clipboard,
+		clipboard: { writeText },
 		context: buildContextCapture(plugin),
 		diagnostics: buildDiagnosticsBus(),
 		pathRedact: {
@@ -31,4 +31,4 @@ export function buildLib(plugin: DeveloperToolboxPlugin): ToolboxLib {
 	};
 }
 
-export type { ToolboxLib } from "./types";
+export type { ToolboxLib } from './types';

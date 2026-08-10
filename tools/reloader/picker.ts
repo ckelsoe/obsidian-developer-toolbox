@@ -1,4 +1,4 @@
-import { FuzzySuggestModal, type App, type PluginManifest } from "obsidian";
+import { FuzzySuggestModal, type App, type PluginManifest } from 'obsidian';
 
 // Lists installed plugins by display name (id shown as subtext via getItemText)
 // and returns the id to the caller. The user never types a plugin id by hand.
@@ -6,7 +6,7 @@ export class PluginPickerModal extends FuzzySuggestModal<PluginManifest> {
 	constructor(
 		app: App,
 		private onChoose: (id: string) => void,
-		placeholder = "Select a plugin",
+		placeholder = 'Select a plugin',
 	) {
 		super(app);
 		this.setPlaceholder(placeholder);

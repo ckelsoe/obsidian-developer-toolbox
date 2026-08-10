@@ -1,14 +1,14 @@
-import { Notice } from "obsidian";
-import type { Disposable, ToolContext, ToolHandle } from "../types";
-import { readPluginVersionFromDisk } from "../../lib/manifest-version";
-import { DEFAULT_RELOADER_SETTINGS, type ReloaderSettings } from "./types";
-import { PluginPickerModal } from "./picker";
-import { renderReloaderSettings } from "./settings";
+import { Notice } from 'obsidian';
+import type { Disposable, ToolContext, ToolHandle } from '../types';
+import { readPluginVersionFromDisk } from '../../lib/manifest-version';
+import { DEFAULT_RELOADER_SETTINGS, type ReloaderSettings } from './types';
+import { PluginPickerModal } from './picker';
+import { renderReloaderSettings } from './settings';
 import {
 	ReloaderController,
 	clearActiveController,
 	setActiveController,
-} from "./controller";
+} from './controller';
 
 type Ctx = ToolContext<ReloaderSettings>;
 
@@ -17,8 +17,8 @@ type Ctx = ToolContext<ReloaderSettings>;
 const ARM_GRACE_MS = 1500;
 
 const reloader: ToolHandle<ReloaderSettings> = {
-	id: "reloader",
-	displayName: "Plugin reloader",
+	id: 'reloader',
+	displayName: 'Plugin reloader',
 	defaultSettings: DEFAULT_RELOADER_SETTINGS,
 
 	register(ctx: Ctx): Disposable {
@@ -29,8 +29,8 @@ const reloader: ToolHandle<ReloaderSettings> = {
 		// and a reload is pending, green flash right after a reload. Clicking
 		// reloads the configured dev plugins and clears the pending state.
 		const ribbon = ctx.plugin.addRibbonIcon(
-			"refresh-cw",
-			"Reload dev plugins",
+			'refresh-cw',
+			'Reload dev plugins',
 			() => void controller.reloadDevPlugins(),
 		);
 		controller.attachIcon(ribbon);
@@ -38,8 +38,10 @@ const reloader: ToolHandle<ReloaderSettings> = {
 		// Always-visible text indicator in the status bar. Clicking it reloads
 		// the dev plugins, same as the ribbon.
 		const statusBar = ctx.plugin.addStatusBarItem();
-		ctx.plugin.registerDomEvent(statusBar, "click", () =>
-			void controller.reloadDevPlugins(),
+		ctx.plugin.registerDomEvent(
+			statusBar,
+			'click',
+			() => void controller.reloadDevPlugins(),
 		);
 		controller.attachStatusBar(statusBar);
 
@@ -51,7 +53,10 @@ const reloader: ToolHandle<ReloaderSettings> = {
 		// Read the version from disk: Obsidian's in-memory manifest is stale after
 		// a live reload of the toolbox itself.
 		if (ctx.settings.showDiagnostics) {
-			void readPluginVersionFromDisk(ctx.app, ctx.plugin.manifest.id).then((v) => {
+			void readPluginVersionFromDisk(
+				ctx.app,
+				ctx.plugin.manifest.id,
+			).then((v) => {
 				new Notice(
 					`Reloader ready (Developer Toolbox v${v ?? ctx.plugin.manifest.version}).`,
 					3000,
@@ -60,19 +65,19 @@ const reloader: ToolHandle<ReloaderSettings> = {
 		}
 
 		ctx.plugin.addCommand({
-			id: "reload-plugin",
-			name: "Reload plugin",
+			id: 'reload-plugin',
+			name: 'Reload plugin',
 			callback: () => {
 				new PluginPickerModal(
 					ctx.app,
 					(id) => void controller.reloadById(id),
-					"Select a plugin to reload",
+					'Select a plugin to reload',
 				).open();
 			},
 		});
 		ctx.plugin.addCommand({
-			id: "reload-dev-plugins",
-			name: "Reload dev plugins",
+			id: 'reload-dev-plugins',
+			name: 'Reload dev plugins',
 			callback: () => void controller.reloadDevPlugins(),
 		});
 

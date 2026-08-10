@@ -1,9 +1,12 @@
-import type { ToolboxLib } from "../../../lib/types";
-import { COUNTDOWN_NOTICE_CLASS } from "../../../lib/ui/notice";
+import type { ToolboxLib } from '../../../lib/types';
+import { COUNTDOWN_NOTICE_CLASS } from '../../../lib/ui/notice';
 
-const HIDDEN_CLASS = "toolbox-hidden";
+const HIDDEN_CLASS = 'toolbox-hidden';
 
-export async function awaitCountdown(seconds: number, lib: ToolboxLib): Promise<void> {
+export async function awaitCountdown(
+	seconds: number,
+	lib: ToolboxLib,
+): Promise<void> {
 	if (seconds <= 0) return;
 	const handle = lib.ui.countdownNotice(seconds);
 	await handle.promise;
@@ -11,7 +14,9 @@ export async function awaitCountdown(seconds: number, lib: ToolboxLib): Promise<
 
 export function hideCountdownElements(): HTMLElement[] {
 	const hidden: HTMLElement[] = [];
-	const nodes = activeDocument.querySelectorAll<HTMLElement>("." + COUNTDOWN_NOTICE_CLASS);
+	const nodes = activeDocument.querySelectorAll<HTMLElement>(
+		'.' + COUNTDOWN_NOTICE_CLASS,
+	);
 	nodes.forEach((node) => {
 		hidden.push(node);
 		node.addClass(HIDDEN_CLASS);

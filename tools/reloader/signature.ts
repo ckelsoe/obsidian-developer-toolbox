@@ -10,7 +10,11 @@
 
 // The build-output files a rebuild touches. A write to anything else in the
 // plugin folder (e.g. data.json on a settings change) is ignored.
-export const WATCHED_FILES = ["main.js", "manifest.json", "styles.css"] as const;
+export const WATCHED_FILES = [
+	'main.js',
+	'manifest.json',
+	'styles.css',
+] as const;
 
 // FNV-1a-style 32-bit hash over a JS string, hex. NOTE: it XORs UTF-16 code
 // units (charCodeAt), not UTF-8 bytes, so it equals canonical byte-wise FNV-1a
@@ -24,10 +28,14 @@ export function fnv1a(input: string): string {
 		// hash *= 16777619, via shifts to stay in 32-bit unsigned range.
 		hash =
 			(hash +
-				((hash << 1) + (hash << 4) + (hash << 7) + (hash << 8) + (hash << 24))) >>>
+				((hash << 1) +
+					(hash << 4) +
+					(hash << 7) +
+					(hash << 8) +
+					(hash << 24))) >>>
 			0;
 	}
-	return hash.toString(16).padStart(8, "0");
+	return hash.toString(16).padStart(8, '0');
 }
 
 // Build a stable signature of the watched files from a reader that returns each
@@ -45,7 +53,7 @@ export function buildSignature(read: (name: string) => string | null): string {
 				: `${name}:${content.length}:${fnv1a(content)}`,
 		);
 	}
-	return parts.join(";");
+	return parts.join(';');
 }
 
 // The outcome of reading one watched file: real content, a genuine absence
@@ -53,23 +61,23 @@ export function buildSignature(read: (name: string) => string | null): string {
 // error split is load-bearing: an error must NOT be encoded as a stable
 // `absent`, or a real rebuild could alias to the baseline and be skipped.
 export type ReadResult =
-	| { kind: "content"; text: string }
-	| { kind: "absent" }
-	| { kind: "error" };
+	{ kind: 'content'; text: string } | { kind: 'absent' } | { kind: 'error' };
 
 // Build a signature from per-file read results, or null when ANY watched file is
 // unreadable (an error, as opposed to a genuine absence). Null means "unknown",
 // so the caller reloads rather than trusting a partial read. A genuine absence
 // is stable and participates in the signature as `name:absent`.
-export function signatureFromReads(read: (name: string) => ReadResult): string | null {
+export function signatureFromReads(
+	read: (name: string) => ReadResult,
+): string | null {
 	let unreadable = false;
 	const signature = buildSignature((name) => {
 		const result = read(name);
-		if (result.kind === "error") {
+		if (result.kind === 'error') {
 			unreadable = true;
 			return null;
 		}
-		return result.kind === "content" ? result.text : null;
+		return result.kind === 'content' ? result.text : null;
 	});
 	return unreadable ? null : signature;
 }
