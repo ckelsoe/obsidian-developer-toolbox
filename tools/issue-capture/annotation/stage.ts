@@ -428,7 +428,7 @@ export class AnnotationStage {
 		const screenY = point.y * scale;
 		const fontSize = (this.editingText?.fontSize ?? DEFAULT_TEXT_FONT_SIZE) * scale;
 		const color = this.editingText?.color ?? this.palette.color;
-		const editor = activeDocument.createElement("textarea");
+		const editor = activeWindow.createEl("textarea");
 		editor.addClass("toolbox-annotation-text-editor");
 		editor.dataset.left = String(screenX);
 		editor.dataset.top = String(screenY);

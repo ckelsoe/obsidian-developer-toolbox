@@ -1,5 +1,20 @@
 import "obsidian";
 
+declare global {
+	// Obsidian installs createEl and friends on every window, but obsidian.d.ts
+	// declares them only as globals and on Node, not as members of the DOM
+	// Window interface. Without this, the `doc.win.createEl(...)` form that
+	// obsidianmd/prefer-create-el asks for resolves as `any` and cascades into
+	// no-unsafe-* errors.
+	interface Window {
+		createEl<K extends keyof HTMLElementTagNameMap>(
+			tag: K,
+			o?: DomElementInfo | string,
+			callback?: (el: HTMLElementTagNameMap[K]) => void,
+		): HTMLElementTagNameMap[K];
+	}
+}
+
 // Ambient augmentation of Obsidian's App with undocumented internals used by the
 // command inspector. Obsidian's own Command/Hotkey/PluginManifest types are
 // referenced via inline `import("obsidian").X` so ESLint's no-undef never fires
