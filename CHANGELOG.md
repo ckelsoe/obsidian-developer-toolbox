@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.5] - 2026-08-11
+
 ### Fixed
 - Path redaction in captured diagnostics now shows `<vault>` (not `<vault>/`) when a path equals the vault root, including a vault referenced with a trailing slash or a filesystem-root base.
 
