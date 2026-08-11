@@ -64,6 +64,18 @@ describe('redactVault', () => {
 			'<vault>/notes/x.md',
 		);
 	});
+
+	test('returns <vault> when the path equals the vault with trailing slashes', () => {
+		expect(redactVault('D:/vault/', 'D:/vault/')).toBe('<vault>');
+		expect(redactVault('D:/vault/', 'D:/vault')).toBe('<vault>');
+		expect(redactVault('D:/vault', 'D:/vault/')).toBe('<vault>');
+	});
+
+	test('handles a filesystem-root vault base', () => {
+		expect(redactVault('/', '/')).toBe('<vault>');
+		expect(redactVault('C:/', 'C:/')).toBe('<vault>');
+		expect(redactVault('/notes/x.md', '/')).toBe('<vault>/notes/x.md');
+	});
 });
 
 describe('isAbsolute', () => {

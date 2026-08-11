@@ -22,11 +22,16 @@ export function redactVault(p: string, vaultBase: string): string {
 	if (!p || !vaultBase) return p;
 	const normalised = p.replace(/\\/g, '/');
 	const base = trimTrailingChars(vaultBase.replace(/\\/g, '/'), '/');
-	if (normalised.toLowerCase().startsWith(base.toLowerCase() + '/')) {
-		return '<vault>/' + normalised.slice(base.length + 1);
-	}
-	if (normalised.toLowerCase() === base.toLowerCase()) {
+	const lowerBase = base.toLowerCase();
+	// Exact-vault match first, comparing both sides trailing-slash-trimmed, so a
+	// path equal to the vault (including a filesystem-root base like `/` or `C:/`)
+	// redacts to `<vault>`, not `<vault>/`.
+	if (trimTrailingChars(normalised, '/').toLowerCase() === lowerBase) {
 		return '<vault>';
+	}
+	const prefix = base ? `${lowerBase}/` : '/';
+	if (normalised.toLowerCase().startsWith(prefix)) {
+		return '<vault>/' + normalised.slice(base.length + 1);
 	}
 	return p;
 }
