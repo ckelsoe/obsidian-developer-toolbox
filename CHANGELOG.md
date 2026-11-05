@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.6] - 2026-11-05
+
 ### Changed
 - The **Immediate settle** and **Delayed countdown** sliders no longer show a floating value tooltip while you drag. Obsidian 1.14 deprecated that tooltip and shows the value next to the slider instead. On Obsidian 1.13 the value is not shown while dragging.
 
