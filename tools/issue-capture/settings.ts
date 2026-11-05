@@ -22,7 +22,6 @@ export function renderIssueCaptureSettings(
 			slider
 				.setLimits(0, 500, 50)
 				.setValue(ctx.settings.immediateSettleMs)
-				.setDynamicTooltip()
 				.onChange(async (value) => {
 					ctx.settings.immediateSettleMs = value;
 					await saveSettings(ctx.plugin);
@@ -38,7 +37,6 @@ export function renderIssueCaptureSettings(
 			slider
 				.setLimits(2, 15, 1)
 				.setValue(ctx.settings.delayedCaptureSeconds)
-				.setDynamicTooltip()
 				.onChange(async (value) => {
 					ctx.settings.delayedCaptureSeconds = value;
 					await saveSettings(ctx.plugin);
