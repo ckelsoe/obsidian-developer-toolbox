@@ -79,7 +79,7 @@ export class IssueDialog extends Modal {
 		contentEl.empty();
 
 		if (this.capturedImage) {
-			this.renderScreenshotPreview(contentEl);
+			this.renderScreenshotPreview(contentEl, this.capturedImage);
 		}
 
 		this.renderTypeRow(contentEl);
@@ -126,7 +126,10 @@ export class IssueDialog extends Modal {
 		);
 	}
 
-	private renderScreenshotPreview(parent: HTMLElement): void {
+	private renderScreenshotPreview(
+		parent: HTMLElement,
+		image: CapturedImage,
+	): void {
 		const { content } = this.lib.ui.stackedRow(parent, {
 			name: 'Screenshot',
 			description:
@@ -141,7 +144,7 @@ export class IssueDialog extends Modal {
 		});
 
 		const img = activeWindow.createEl('img');
-		const url = URL.createObjectURL(this.capturedImage!.pngBlob);
+		const url = URL.createObjectURL(image.pngBlob);
 		img.onload = (): void => {
 			URL.revokeObjectURL(url);
 			this.annotationStage = new AnnotationStage(
@@ -459,18 +462,18 @@ export class IssueDialog extends Modal {
 		const stamp = formatTimestamp(this.capturedImage.capturedAt);
 		const targetRel = `${folder}/${stamp}.png`;
 		const unique = await this.lib.vaultPaths.suggestUnique(targetRel);
-		const blob = await this.flattenedBlob();
+		const blob = await this.flattenedBlob(this.capturedImage);
 		const buf = await blob.arrayBuffer();
 		await this.app.vault.createBinary(unique, buf);
 		this.savedImagePath = unique;
 		return unique;
 	}
 
-	private async flattenedBlob(): Promise<Blob> {
+	private async flattenedBlob(image: CapturedImage): Promise<Blob> {
 		if (this.annotationStage && !this.annotationStage.isEmpty()) {
 			return await this.annotationStage.toBlob();
 		}
-		return this.capturedImage!.pngBlob;
+		return image.pngBlob;
 	}
 
 	private async handleCopy(): Promise<void> {

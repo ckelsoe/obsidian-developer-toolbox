@@ -87,6 +87,10 @@ This plugin is desktop only. Screenshot capture and plugin reloading rely on des
 
 Screenshots, issue notes, and the reloader log are saved under a single configurable storage folder (default `_dev-tools`), each in its own subfolder. Change the storage folder once in settings and all output moves with it.
 
+## Community
+
+Questions, ideas, and general discussion happen on [Discord](https://discord.gg/gd6tKJDPj4). For anything that needs tracking, a [GitHub issue](https://github.com/ckelsoe/obsidian-developer-toolbox/issues) is still the better home.
+
 ## Contributing
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md).

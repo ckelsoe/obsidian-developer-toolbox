@@ -88,6 +88,16 @@ const diagnostics: ToolHandle<DiagnosticsSettings> = {
 		};
 	},
 
+	settingsSearch: {
+		name: 'Log file',
+		desc: 'Where the diagnostics log is saved, and whether it records each session start.',
+		aliases: [
+			'log subfolder',
+			'open log',
+			'session start',
+			'environment snapshot',
+		],
+	},
 	renderSettings(container: HTMLElement, ctx: Ctx): void {
 		renderDiagnosticsSettings(container, ctx);
 	},

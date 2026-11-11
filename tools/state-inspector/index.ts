@@ -40,6 +40,11 @@ const stateInspector: ToolHandle<StateInspectorSettings> = {
 		};
 	},
 
+	settingsSearch: {
+		name: 'Snapshot contents',
+		desc: 'Whether the snapshot shows the vault name and the plugin list, and how the active file path appears.',
+		aliases: ['snapshot', 'vault name', 'plugin list', 'path style'],
+	},
 	renderSettings(container: HTMLElement, ctx: Ctx): void {
 		renderStateInspectorSettings(container, ctx);
 	},

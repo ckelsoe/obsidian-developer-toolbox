@@ -20,6 +20,13 @@ export interface ToolboxData {
 	tools: Record<string, ToolStoredSettings>;
 }
 
+// Community discussion for this plugin. This must stay a never-expiring
+// discord.gg invite: a discord.com/channels/... deep link only resolves for
+// accounts already in the server, so it cannot get anyone in, and a default
+// invite expires after 7 days and would rot in a shipped release.
+const DISCORD_URL = 'https://discord.gg/gd6tKJDPj4';
+const REPO_URL = 'https://github.com/ckelsoe/obsidian-developer-toolbox';
+
 const DATA_VERSION = 3;
 const DEFAULT_STORAGE_ROOT = '_dev-tools';
 
@@ -121,12 +128,16 @@ export class ToolboxSettingTab extends PluginSettingTab {
 			];
 
 			// A tool's own settings are arbitrary imperative DOM, so they live in
-			// a render row that shows only while the tool is enabled. Render rows
-			// are not search-indexable; the enabled toggle and heading are.
+			// a render row that shows only while the tool is enabled. Search
+			// finds the row by the tool's settingsSearch name, desc and aliases.
 			if (tool.renderSettings) {
+				const search = tool.settingsSearch;
 				items.push({
-					name: '',
-					searchable: false,
+					name: search?.name ?? '',
+					...(search
+						? { desc: search.desc, aliases: search.aliases }
+						: {}),
+					searchable: search !== undefined,
 					visible: () =>
 						this.plugin.data.tools[tool.id]?.enabled ??
 						tool.defaultSettings.enabled,
@@ -149,7 +160,7 @@ export class ToolboxSettingTab extends PluginSettingTab {
 		}
 
 		defs.push({
-			name: '',
+			name: 'About',
 			searchable: false,
 			render: (setting: Setting) => {
 				this.renderFooter(setting);
@@ -213,24 +224,39 @@ export class ToolboxSettingTab extends PluginSettingTab {
 		return match?.[1] ?? null;
 	}
 
-	// Renders the version + GitHub link footer into a trailing settings row.
 	private renderFooter(setting: Setting): void {
-		const footer = setting.settingEl;
-		footer.empty();
-		footer.addClass('toolbox-version-footer');
-		const versionEl = footer.createSpan({
-			text: `Developer Toolbox v${this.plugin.manifest.version}`,
+		const el = setting.settingEl;
+		el.empty();
+		el.addClass('developer-toolbox-settings-footer');
+		// One inner flex container; separators are the gap, not text whitespace.
+		const inner = el.createDiv({ cls: 'developer-toolbox-footer-inner' });
+		const manifestVersion = this.plugin.manifest.version || '0.0.0';
+		const versionEl = inner.createSpan({
+			text: `Version ${manifestVersion}`,
 		});
-		footer.createEl('a', {
-			text: 'View on GitHub',
-			href: 'https://github.com/ckelsoe/obsidian-developer-toolbox',
-			cls: 'toolbox-version-link',
-		});
+		// Separator and its link are one nowrap item, so a wrap never strands a "|".
+		const link = (text: string, url: string): void => {
+			const item = inner.createSpan({
+				cls: 'developer-toolbox-footer-link',
+			});
+			item.createSpan({
+				cls: 'developer-toolbox-footer-separator',
+				text: '|',
+			});
+			item.createEl('a', {
+				text,
+				href: url,
+				attr: { target: '_blank', rel: 'noopener' },
+			});
+		};
+		link('GitHub', REPO_URL);
+		link('Discord', DISCORD_URL);
+		link('Report issues', `${REPO_URL}/issues`);
 		// The in-memory manifest can be stale after a live reload; show the
 		// on-disk version so the footer matches what was actually built.
 		void readPluginVersionFromDisk(this.app, this.plugin.manifest.id).then(
 			(v) => {
-				if (v) versionEl.setText(`Developer Toolbox v${v}`);
+				if (v) versionEl.setText(`Version ${v}`);
 			},
 		);
 	}

@@ -90,6 +90,20 @@ const reloader: ToolHandle<ReloaderSettings> = {
 		};
 	},
 
+	settingsSearch: {
+		name: 'Reload and dev plugins',
+		desc: 'Auto-reload on rebuild, the reload debounce, diagnostics, the event log, and the list of dev plugins to reload.',
+		aliases: [
+			'auto-reload',
+			'hot reload',
+			'rebuild',
+			'debounce',
+			'event log',
+			'log subfolder',
+			'dev plugins',
+			'add dev plugin',
+		],
+	},
 	renderSettings(container: HTMLElement, ctx: Ctx): void {
 		renderReloaderSettings(container, ctx);
 	},

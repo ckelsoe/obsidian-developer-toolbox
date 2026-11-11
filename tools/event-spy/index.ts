@@ -106,6 +106,18 @@ const eventSpy: ToolHandle<EventSpySettings> = {
 		};
 	},
 
+	settingsSearch: {
+		name: 'Watched events',
+		desc: 'Which workspace, editor and vault events the spy records.',
+		aliases: [
+			'workspace events',
+			'editor change',
+			'vault events',
+			'file open',
+			'rename',
+			'keystroke',
+		],
+	},
 	renderSettings(container: HTMLElement, ctx: Ctx): void {
 		renderEventSpySettings(container, ctx);
 	},
