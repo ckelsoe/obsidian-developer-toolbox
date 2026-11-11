@@ -2,21 +2,16 @@
 # accepted and what would let us drop it. Revisit whenever the dependency tree
 # changes (a new lockfile may remove the transitive path entirely).
 #
-# One active suppression, below. The deepmerge advisory left with Jest
-# (2026-11-11): Vitest does not use deepmerge. The minimatch advisory is fixed
-# through version-keyed `overrides` (`minimatch@9`, `minimatch@10` to 11) for
-# every copy but one, which the entry below covers. The braces entry was
-# dropped 2026-11-04 (GitHub withdrew GHSA-vfj7-8cjw-p6xm on 2026-10-23). The
-# glob advisory is fixed through `overrides` (2026-11-04). The dev-only
-# transitive advisories that previously needed one (brace-expansion
-# GHSA-mh99-v99m-4gvg and its bypass GHSA-rgw5-rvv9-x895, js-yaml
-# GHSA-5p4m-2wfm-xmqj) are FIXED rather than ignored: the package.json
-# `overrides` block pins each dependency to a patched version.
+# No active suppressions. The deepmerge advisory left with Jest (2026-11-11):
+# Vitest does not use deepmerge. The minimatch advisory is fixed through
+# version-keyed `overrides` (`minimatch@9`, `minimatch@10` to 11), which leave
+# eslint's own 3.x copies alone (2026-11-11). The braces entry was dropped
+# 2026-11-04 (GitHub withdrew GHSA-vfj7-8cjw-p6xm on 2026-10-23). The glob
+# advisory is fixed through `overrides` (2026-11-04). The dev-only transitive
+# advisories that previously needed one (brace-expansion GHSA-mh99-v99m-4gvg
+# and its bypass GHSA-rgw5-rvv9-x895, js-yaml GHSA-5p4m-2wfm-xmqj) are FIXED
+# rather than ignored: the package.json `overrides` block pins each dependency
+# to a patched version, so a fresh scaffold scans clean.
 #
 # Add an [[IgnoredVulns]] entry here only for an advisory with no non-breaking
 # fix, and document why and what would let us drop it.
-
-[[IgnoredVulns]]
-id = "GHSA-g3hv-75wg-m249"
-ignoreUntil = 2026-12-31
-reason = "minimatch: denial of service when a crafted glob pattern is compiled with optimizationLevel 2 or higher. Fixed in 11. One copy is left: minimatch 8 under eslint-plugin-json-schema-validator 5, which eslint-plugin-obsidianmd 0.4.x pulls in. It cannot be overridden to 11: the plugin calls require('minimatch').default, and 11 has no default export. Dev-only: it matches this repo's own JSON file names during lint; nothing ships in main.js. Drop this entry when eslint-plugin-obsidianmd moves to 0.5 or later, which no longer depends on eslint-plugin-json-schema-validator."
