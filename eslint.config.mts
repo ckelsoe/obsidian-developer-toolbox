@@ -90,6 +90,7 @@ export default tseslint.config(
 		".stryker-tmp",
 		"main.js",
 		"scripts",
+		".husky",
 		"esbuild.config.mjs",
 		"stryker.config.mjs",
 		"version-bump.mjs",
