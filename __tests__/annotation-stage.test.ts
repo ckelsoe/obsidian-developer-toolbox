@@ -6,7 +6,7 @@ import {
 // The bake step (D1: move/resize/rotate) folds a node's live transform back
 // into the flat point list stored on pen/arrow annotations. These tests pin
 // that mapping with hand-built mappers, so no Konva (ESM-only) import is pulled
-// into the jest runtime.
+// into the test runtime.
 
 function translate(dx: number, dy: number): PointMapper {
 	return { point: (p) => ({ x: p.x + dx, y: p.y + dy }) };
