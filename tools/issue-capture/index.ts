@@ -149,6 +149,25 @@ const issueCapture: ToolHandle<IssueCaptureSettings> = {
 		};
 	},
 
+	settingsSearch: {
+		name: 'Capture and privacy',
+		desc: 'Screenshot timing, the default issue type, where screenshots, issues and annotation drafts are saved, and what context goes into an issue.',
+		aliases: [
+			'screenshot',
+			'settle',
+			'countdown',
+			'delay',
+			'issue type',
+			'subfolder',
+			'annotation draft',
+			'privacy',
+			'redact',
+			'home directory',
+			'plugin list',
+			'vault name',
+			'path style',
+		],
+	},
 	renderSettings(container: HTMLElement, ctx: Ctx): void {
 		renderIssueCaptureSettings(container, ctx);
 	},

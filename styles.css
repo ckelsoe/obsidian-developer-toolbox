@@ -488,15 +488,29 @@
 	display: block;
 }
 
-.toolbox-version-footer {
+.developer-toolbox-settings-footer {
+	justify-content: center;
+	text-align: center;
+	opacity: 0.8;
+}
+
+.developer-toolbox-footer-inner {
 	display: flex;
-	gap: 0.6em;
+	flex-wrap: wrap;
 	align-items: center;
-	margin-top: 1.5em;
-	padding-top: 0.8em;
-	border-top: 1px solid var(--background-modifier-border);
-	color: var(--text-muted);
-	font-size: var(--font-ui-smaller);
+	justify-content: center;
+	gap: var(--size-4-2);
+}
+
+.developer-toolbox-footer-link {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--size-4-2);
+	white-space: nowrap;
+}
+
+.developer-toolbox-footer-separator {
+	color: var(--text-faint);
 }
 
 .toolbox-reloader-dirty,

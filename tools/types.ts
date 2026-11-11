@@ -14,6 +14,13 @@ export interface ToolContext<TSettings = unknown> {
 	saveSettings: () => Promise<void>;
 }
 
+// What Obsidian's settings search matches a tool's hand-drawn settings by.
+interface SettingsSearch {
+	name: string;
+	desc: string;
+	aliases: string[];
+}
+
 export interface ToolHandle<
 	TSettings extends { enabled: boolean } = { enabled: boolean },
 > {
@@ -22,4 +29,6 @@ export interface ToolHandle<
 	defaultSettings: TSettings;
 	register(ctx: ToolContext<TSettings>): Disposable;
 	renderSettings?(container: HTMLElement, ctx: ToolContext<TSettings>): void;
+	// Required whenever renderSettings is set, or search cannot find the row.
+	settingsSearch?: SettingsSearch;
 }
