@@ -12,6 +12,9 @@ declare global {
 			o?: DomElementInfo | string,
 			callback?: (el: HTMLElementTagNameMap[K]) => void,
 		): HTMLElementTagNameMap[K];
+		// Electron's Node require and process, present only in the desktop app.
+		require?: (id: string) => unknown;
+		process?: { versions?: { electron?: string } };
 	}
 }
 
