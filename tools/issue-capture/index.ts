@@ -22,7 +22,7 @@ class IssueCaptureHandlers {
 	async startCapture(opts: StartCaptureOpts): Promise<void> {
 		try {
 			const settings = this.ctx.settings;
-			let capturedImage = null;
+			let capturedImage: CapturedImage | null = null;
 			if (opts.withScreenshot) {
 				capturedImage = await capture(
 					{ delayMs: opts.delayMs },
