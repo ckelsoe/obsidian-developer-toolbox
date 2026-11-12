@@ -26,10 +26,8 @@ function detectElectronVersion(): string {
 	// Obsidian exposes no Electron version API. On desktop, read it from the Node
 	// `process` global via globalThis (no navigator sniffing, no node-module
 	// import). Mobile has no Electron, so report "unknown" there.
-	if (!Platform.isDesktop) return 'unknown';
-	const proc = (window as { process?: { versions?: { electron?: string } } })
-		.process;
-	return proc?.versions?.electron ?? 'unknown';
+	if (!Platform.isDesktopApp) return 'unknown';
+	return window.process?.versions?.electron ?? 'unknown';
 }
 
 function modeFromView(view: MarkdownView): CapturedContext['activeViewMode'] {

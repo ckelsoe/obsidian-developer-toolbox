@@ -34,7 +34,7 @@ interface PathLike {
 // through window.require behind a guard, which keeps the scorecard's
 // no-top-level-Node-import rule satisfied.
 function requireNode<T>(id: string): T | null {
-	const req = (window as { require?: (id: string) => unknown }).require;
+	const req = window.require;
 	if (typeof req !== 'function') return null;
 	try {
 		return req(id) as T;

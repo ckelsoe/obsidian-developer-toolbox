@@ -38,11 +38,11 @@ All three must pass. Pull requests that break CI will not be reviewed until gree
 - TypeScript strict mode is on. Never use `as any` casting. If types are missing, add declarations to `types.d.ts`.
 - Follow [Obsidian's plugin guidelines](https://docs.obsidian.md/Plugins/Releasing/Plugin+guidelines).
 - Prefer `containerEl.createDiv()` / `createSpan()` over generic `createEl('div'|'span')`.
-- Do not import Node built-ins (`path`, `fs`, etc.) at the top of `main.ts`. Use a `Platform.isDesktop`-guarded `require()` instead.
+- Do not import Node built-ins (`path`, `fs`, etc.) at the top of `main.ts`. Use a `Platform.isDesktopApp`-guarded `require()` instead.
 - No inline `style` attributes. Move styles to `styles.css`.
 - Settings tab headings must avoid the words "settings", "options", "general", and the plugin name.
 - All UI strings (commands, menu titles, setting names, notifications) use sentence case. Brands recognized by `eslint-plugin-obsidianmd` (Markdown, macOS, iOS, Windows, Linux, etc.) keep their official casing.
-- Keep the settings UI compatible with mobile (`isDesktopOnly: false` means features must degrade gracefully on iOS/Android).
+- This plugin is desktop only (`isDesktopOnly: true`). Features may use Node and Electron APIs, but only through a `Platform.isDesktopApp`-guarded `require()`.
 
 ## Submitting a pull request
 
@@ -54,15 +54,7 @@ All three must pass. Pull requests that break CI will not be reviewed until gree
 
 ## Releases
 
-Releases are cut by the maintainer. The release workflow runs automatically on tag push and:
-
-1. Builds and tests the plugin.
-2. Generates SLSA build provenance attestation for `main.js`, `manifest.json`, and `styles.css`.
-3. Submits artifacts to VirusTotal for malware analysis (requires `VT_API_KEY` repo secret).
-4. Extracts the matching `CHANGELOG.md` section as release notes.
-5. Publishes the GitHub release.
-
-Contributors do not need to bump versions or create release artifacts.
+Releases are cut by the maintainer. Contributors do not need to bump versions or create release artifacts.
 
 ## License
 
