@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.10.7] - 2026-11-13
+
 ### Changed
 - Settings search now finds each tool's own settings. Search for "screenshot", "privacy", "debounce", "dev plugins", "snapshot", "log subfolder" or "vault events" and the tool's section comes up. Before, search found only the storage folder and each tool's Enabled toggle.
 - The settings footer now reads Version, GitHub, Discord and Report issues, like the other plugins. It showed only the version and a GitHub link before.
